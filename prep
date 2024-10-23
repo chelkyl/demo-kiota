@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+
+# Prepare a test run report
+
+set -e
+
+mode="$1"
+
+if [[ -z "$mode" ]]; then
+  mode="table"
+elif [[ "$mode" == "table" || "$mode" == "code" ]]; then
+  shift 1
+else
+  echo "Error: must provide a valid mode" >&2
+  exit 1
+fi
+
+out_file=report_template.md
+
+if [[ "$mode" == "table" ]]; then
+  langs=()
+  if [[ "$#" -eq 0 ]]; then
+    langs+=("TS" "C#")
+  else
+    for lang in "$@"; do langs+=("$lang"); done
+  fi
+
+  printf "<table>\n" > "$out_file"
+  printf "  <thead>\n" >> "$out_file"
+  printf "    <tr>\n" >> "$out_file"
+  printf "      <th>Test URI Paths</th>\n" >> "$out_file"
+  for lang in "${langs[@]}"; do
+  printf "      <th>%s kiota main version</th>\n" "$lang" >> "$out_file"
+  done
+  for lang in "${langs[@]}"; do
+  printf "      <th>%s kiota pr version</th>\n" "$lang" >> "$out_file"
+  done
+  printf "    </tr>\n" >> "$out_file"
+  printf "  </thead>\n" >> "$out_file"
+
+  printf "  <tbody>\n" >> "$out_file"
+
+  while read -r file || [[ -n "$file" ]]; do
+  printf "    <tr>\n" >> "$out_file"
+  printf "      <td>\n" >> "$out_file"
+  printf "        <p>\n" >> "$out_file"
+  printf "          File: %s<br>\n" "${file#tests/}" >> "$out_file"
+  printf "          %s<br>\n" $(sed -rn "/^paths:/,$ s/^  ([^: ]+):$/  \1/p" "$file") >> "$out_file"
+  printf "        </p>\n" >> "$out_file"
+  printf "      </td>\n" >> "$out_file"
+  for i in {1..2}; do
+  for lang in "${langs[@]}"; do
+  printf "      <td>\n" >> "$out_file"
+  printf "        <p>.</p>\n" >> "$out_file"
+  printf "      </td>\n" >> "$out_file"
+  done
+  done
+  printf "    </tr>\n" >> "$out_file"
+  done < <(find tests/ -type f -name "*.yaml" | sort -V)
+
+  printf "  </tbody>\n" >> "$out_file"
+  printf "</table>\n" >> "$out_file"
+: << EOF
+
+<table>
+  <thead>
+    <tr>
+      <th>Path URIs</th>
+      <th>TypeScript Notes</th>
+      <th>C# Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <p>
+          /foo<br>
+          /foo/<br>
+        </p>
+      </td>
+      <td>
+        <p>Thisasdf a sdklfj  aosihdfoi jfoais oisdjfois osijfao</p>
+      </td>
+      <td>
+        <p>Thisasdf a sdklfj  aosihdfoi jfoais oisdjfois osijfao</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+EOF
+
+else
+  printf '```' > "$out_file"
+
+  while read -r file || [[ -n "$file" ]]; do
+    printf "\nFile: %s\n" "${file#tests/}" >> "$out_file"
+    printf "Paths:\n" >> "$out_file"
+    sed -rn "/^paths:/,$ s/^  ([^: ]+):$/  \1/p" "$file" >> "$out_file"
+    printf 'Results:\n' >> "$out_file"
+  done < <(find tests/ -type f -name "*.yaml" | sort -V)
+
+  printf '```\n' >> "$out_file"
+fi

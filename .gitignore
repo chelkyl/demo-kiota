@@ -1,0 +1,7 @@
+/out/**
+
+/report_template.md
+
+/.env
+/kiota_main
+/kiota_pr

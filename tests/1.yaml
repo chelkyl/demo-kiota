@@ -1,0 +1,19 @@
+openapi: 3.0.0
+info:
+  title: Sample API
+  description: A sample API that uses trailing slashes.
+  version: 1.0.0
+servers:
+  - url: https://api.example.com/v1
+paths:
+  /foo/:
+    get:
+      summary: Summary 1
+      description: Description 1
+      responses:
+        "200":
+          description: Response description 1
+          content:
+            text/plain:
+              schema:
+                type: string

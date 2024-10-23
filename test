@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+# Call kiota on all test yaml files
+
+set -e
+
+mode="${1,,}"
+lang="${2:-typescript}"
+lang="${lang,,}"
+
+[[ -n "$kiota_main" ]] || { echo "Error: must define kiota_main as path to a kiota exe" >&2; exit 1; }
+[[ -n "$kiota_pr" ]] || { echo "Error: must define kiota_pr as path to a kiota exe" >&2; exit 1; }
+[[ "$mode" == "main" || "$mode" == "pr" ]] || { echo "Error: must provide argument mode as 'main' or 'pr'" >&2; exit 1; }
+[[ "$lang" =~ ^(cli|csharp|go|java|php|python|ruby|swift|typescript)$ ]] || { echo "Error: must provide a valid language" >&2; exit 1; }
+
+kiota="$kiota_main"
+[[ "$mode" == "pr" ]] && kiota="$kiota_pr"
+
+export KIOTA_OFFLINE_ENABLED=true KIOTA_TUTORIAL_ENABLED=false
+
+while read -r file || [[ -n "$file" ]]; do
+    "$kiota" generate --exclude-backward-compatible --class-name "ApiSdk" --namespace-name "apiSdk" --language "$lang" --clear-cache --clean-output --output "out/$mode/$lang/${file##*/}" --openapi "$file"
+done < <(find tests/ -type f -name '*.yaml' | sort -V)
