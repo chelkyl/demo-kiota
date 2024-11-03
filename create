@@ -5,9 +5,52 @@
 test_name=""
 force=0
 list_only=0
+check_only=0
+normalize=0
 tags=()
 
-parsed_args=$(getopt --name "create" -o n:t:lf -l name:,tag:,list,force -- "$@")
+help() {
+  cat << EOF
+Create or examine test yaml files
+
+Usage: create [OPTIONS] [URI...]
+
+Options:
+
+  -n, --name <number>   number/name/id of the test to create
+                        default: the next number after the last test in tests/
+                                  starts at 1 if there are no tests
+
+  -t, --tag <tag>       a tag value placed at the top of the test file
+                        can be specified multiple times to add multiple tags
+
+  -h, --help            show this help message then exit
+
+  -l, --list            list all test files and the URIs within them then exit
+
+  -c, --check           check all test files and exit with error if any tests
+                        have the same set of URIs
+
+  -s, --sort            sorts the given URIs before writing the new test file
+                        in --list and --check mode, sorts each set of URIs
+                        within each test before outputting/checking
+
+  -f, --force           bypass any errors and silence warnings
+                        - if the test file already exists, overwrite it
+                        - if the same URIs are in another test, write the
+                          new test anyway
+                        - if the URIs after being sorted are in another test,
+                          hide the warning
+
+Positional Arguments:
+
+URI   a space-separated list of one or more paths to add to the new test file
+      ignored in --list or --check mode
+
+EOF
+}
+
+parsed_args=$(getopt --name "create" -o n:t:hlcsf -l name:,tag:,help,list,check,sort,force -- "$@")
 eval set -- "$parsed_args"
 while :; do
   case "$1" in
@@ -20,8 +63,20 @@ while :; do
       tags+=("$2")
       shift 2
       ;;
+    -h|--help)
+      help
+      exit 0
+      ;;
     -l|--list)
       list_only=1
+      shift 1
+      ;;
+    -c|--check)
+      check_only=1
+      shift 1
+      ;;
+    -s|--sort)
+      normalize=1
       shift 1
       ;;
     -f|--force)
@@ -29,7 +84,7 @@ while :; do
       shift 1
       ;;
     --)
-      shift
+      shift 1
       break
       ;;
     *)
@@ -39,19 +94,45 @@ while :; do
   esac
 done
 
-[[ $# -gt 0 ]] || { echo "Error: missing paths for test" >&2; exit 1; }
-
 declare -A all_tests
+declare -A all_tests_normalized
 all_tests_ordered=()
 while read -r old_test_path || [[ -n "$old_test_path" ]]; do
   old_test_file="${old_test_path#*/}"
   all_tests_ordered+=("$old_test_file")
-  all_tests["$old_test_file"]="$(sed -rn "/^paths:/,$ s/^  ([^: ]+):$/\1/p" "$old_test_path" | sort)"
+  all_tests["$old_test_file"]="$(sed -rn "/^paths:/,$ s/^  ([^: ]+):$/\1/p" "$old_test_path")"
+  all_tests_normalized["$old_test_file"]="$(sed -rn "/^paths:/,$ s/^  ([^: ]+):$/\1/p" "$old_test_path" | sort)"
 done < <(find tests/ -type f -regextype posix-extended -regex "tests/[0-9]+\.yaml" | sort -V)
+
+if [[ "$check_only" -eq 1 ]]; then
+  found_dupes=0
+  declare -A dupes_map
+  i=1
+  for old_test_file in "${all_tests_ordered[@]}"; do
+    [[ "$normalize" -eq 1 ]] && old_test="${all_tests_normalized[$old_test_file]}" || old_test="${all_tests[$old_test_file]}"
+    dupes=()
+    for chk_test_file in "${all_tests_ordered[@]:i}"; do
+      [[ "${dupes_map[$chk_test_file]}" -eq 1 ]] && continue
+      [[ "$normalize" -eq 1 ]] && chk_test="${all_tests_normalized[$chk_test_file]}" || chk_test="${all_tests[$chk_test_file]}"
+      if [[ "$old_test" == "$chk_test" ]]; then
+        dupes+=("$chk_test_file")
+        dupes_map["$chk_test_file"]=1
+        found_dupes=1
+      fi
+    done
+    if [[ "${#dupes[@]}" -gt 0 ]]; then
+      printf 'duplicates found for %s:' "$old_test_file"
+      printf ' %s' "${dupes[@]}"
+      printf "\n%s\n\n" "$old_test"
+    fi
+    i=$((i + 1))
+  done
+  exit "$found_dupes"
+fi
 
 if [[ "$list_only" -eq 1 ]]; then
   for old_test_file in "${all_tests_ordered[@]}"; do
-    old_test="${all_tests[$old_test_file]}"
+    [[ "$normalize" -eq 1 ]] && old_test="${all_tests_normalized[$old_test_file]}" || old_test="${all_tests[$old_test_file]}"
     printf "%s\n" "$old_test_file"
     printf "%s\n\n" "$old_test"
   done
@@ -71,10 +152,14 @@ if [[ -f "$test_path" && "$force" -ne 1 ]]; then
 fi
 
 
-new_test=$(echo $* | tr ' ' '\n' | sort)
+[[ $# -gt 0 ]] || { echo "Error: missing paths for test" >&2; exit 1; }
+
+new_test=$(echo "$*" | tr ' ' '\n')
+new_test_normalized=$(echo "$*" | tr ' ' '\n' | sort)
 
 for old_test_file in "${all_tests_ordered[@]}"; do
   old_test="${all_tests[$old_test_file]}"
+  old_test_normalized="${all_tests_normalized[$old_test_file]}"
   if [[ "$old_test" == "$new_test" ]]; then
     if [[ "$force" -ne 1 ]]; then
       echo "Error: the given test already exists at '$old_test_file'" >&2
@@ -83,9 +168,15 @@ for old_test_file in "${all_tests_ordered[@]}"; do
       echo "Warning: the given test already exists at '$old_test_file', continuing anyway" >&2
     fi
   fi
+  if [[ "$old_test_normalized" == "$new_test_normalized" ]]; then
+    if [[ "$force" -ne 1 ]]; then
+      echo "Warning: the given test normalized already exists at '$old_test_file', continuing anyway" >&2
+    fi
+  fi
 done
 
 cat << EOF > "$test_path"
+# tags: ${tags[*]}
 openapi: 3.0.0
 info:
   title: Sample API
@@ -96,8 +187,19 @@ servers:
 paths:
 EOF
 
+uris=()
+if [[ "$normalize" -eq 1 ]]; then
+  while read -r uri || [[ -n "$uri" ]]; do
+    uris+=("$uri")
+  done < <(printf '%s\n' "$@" | sort)
+else
+  for uri in "$@"; do
+    uris+=("$uri")
+  done
+fi
+
 i=1
-for uri in "$@"; do
+for uri in "${uris[@]}"; do
   cat << EOF >> "$test_path"
   $uri:
     get:
