@@ -1,0 +1,34 @@
+{
+  "descriptionHash": "52CBDA7927AC40F59BBFF74FFE69476D26CF302F31D8DCA8111F5E480A57513C306F0363011138C0AA35AC9E7A981801E65C48AA0FCB7FAC4736A0BC21BCE7ED",
+  "descriptionLocation": "../../../../tests/9.yaml",
+  "lockFileVersion": "1.0.0",
+  "kiotaVersion": "1.20.0",
+  "clientClassName": "ApiSdk",
+  "typeAccessModifier": "Public",
+  "clientNamespaceName": "apiSdk",
+  "language": "TypeScript",
+  "usesBackingStore": false,
+  "excludeBackwardCompatible": true,
+  "includeAdditionalData": true,
+  "disableSSLValidation": false,
+  "serializers": [
+    "Microsoft.Kiota.Serialization.Json.JsonSerializationWriterFactory",
+    "Microsoft.Kiota.Serialization.Text.TextSerializationWriterFactory",
+    "Microsoft.Kiota.Serialization.Form.FormSerializationWriterFactory",
+    "Microsoft.Kiota.Serialization.Multipart.MultipartSerializationWriterFactory"
+  ],
+  "deserializers": [
+    "Microsoft.Kiota.Serialization.Json.JsonParseNodeFactory",
+    "Microsoft.Kiota.Serialization.Text.TextParseNodeFactory",
+    "Microsoft.Kiota.Serialization.Form.FormParseNodeFactory"
+  ],
+  "structuredMimeTypes": [
+    "application/json",
+    "text/plain;q=0.9",
+    "application/x-www-form-urlencoded;q=0.2",
+    "multipart/form-data;q=0.1"
+  ],
+  "includePatterns": [],
+  "excludePatterns": [],
+  "disabledValidationRules": []
+}

@@ -1,13 +1,8 @@
-# Demonstrate kiota support for trailing slashes in paths
-
-## Report
-
 <table>
   <thead>
     <tr>
       <th>Test URI Paths</th>
       <th>TS kiota main Results</th>
-      <th>Python kiota main Results</th>
     </tr>
   </thead>
   <tbody>
@@ -19,7 +14,10 @@
         </p>
       </td>
       <td valign="top">
-        <p>Result:&nbsp;</p>
+        <p>
+          Result:&nbsp;?<br>
+          ...<br>
+        </p>
         <pre>
 <a href="out/main/typescript/1.yaml">out/main/typescript/1.yaml</a>
 ├── apiSdk.ts       # main entry point
@@ -32,18 +30,6 @@
                     #   `get` using `FooRequestBuilderUriTemplate`
 </pre>
       </td>
-      <td valign="top">
-        <p>Result:&nbsp;</p>
-        <pre>
-<a href="out/main/python/1.yaml">out/main/python/1.yaml</a>
-├── api_sdk.py                    # main entry point
-│                                 #   has `foo(self) -> FooRequestBuilder`
-└── foo                           
-    └── foo_request_builder.py    # UriTemplate = "{+baseurl}/foo/"
-                                  # RequestBuilder has the standard methods
-                                  #   and `with_url(self,raw_url: str) -> FooRequestBuilder`
-</pre>
-      </td>
     </tr>
     <tr>
       <td valign="top">
@@ -53,7 +39,10 @@
         </p>
       </td>
       <td valign="top">
-        <p>Result:&nbsp;</p>
+        <p>
+          Result:&nbsp;?<br>
+          ...<br>
+        </p>
         <pre>
 <a href="out/main/typescript/2.yaml">out/main/typescript/2.yaml</a>
 ├── apiSdk.ts           # main entry point
@@ -72,21 +61,6 @@
                         #   `get` using `BarRequestBuilderUriTemplate`
 </pre>
       </td>
-      <td valign="top">
-        <p>Result:&nbsp;</p>
-        <pre>
-<a href="out/main/python/2.yaml">out/main/python/2.yaml</a>
-├── api_sdk.py                        # main entry point
-│                                     #   has `foo(self) -> FooRequestBuilder`
-└── foo                               
-    ├── foo_request_builder.py        # UriTemplate = "{+baseurl}/foo"
-    │                                 # RequestBuilder has `bar(self) -> BarRequestBuilder`
-    └── bar                           
-        └── bar_request_builder.py    # UriTemplate = "{+baseurl}/foo/bar/"
-                                      # RequestBuilder has the standard methods
-                                      #   and `with_url(self,raw_url: str) -> BarRequestBuilder`
-</pre>
-      </td>
     </tr>
     <tr>
       <td valign="top">
@@ -96,7 +70,10 @@
         </p>
       </td>
       <td valign="top">
-        <p>Result:&nbsp;</p>
+        <p>
+          Result:&nbsp;?<br>
+          ...<br>
+        </p>
         <pre>
 <a href="out/main/typescript/3.yaml">out/main/typescript/3.yaml</a>
 ├── apiSdk.ts       # main entry point
@@ -109,18 +86,6 @@
                     #   `get` using `WithPathRequestBuilderUriTemplate`
 </pre>
       </td>
-      <td valign="top">
-        <p>Result:&nbsp;</p>
-        <pre>
-<a href="out/main/python/3.yaml">out/main/python/3.yaml</a>
-├── api_sdk.py                          # main entry point
-│                                       #   has
-└── item                                
-    └── with_path_request_builder.py    # UriTemplate = "{+baseurl}/{path}/"
-                                        # RequestBuilder has the standard methods
-                                        #   and `with_url(self,raw_url: str) -> WithPathRequestBuilder`
-</pre>
-      </td>
     </tr>
     <tr>
       <td valign="top">
@@ -130,7 +95,10 @@
         </p>
       </td>
       <td valign="top">
-        <p>Result:&nbsp;</p>
+        <p>
+          Result:&nbsp;?<br>
+          ...<br>
+        </p>
         <pre>
 <a href="out/main/typescript/4.yaml">out/main/typescript/4.yaml</a>
 ├── apiSdk.ts           # main entry point
@@ -149,21 +117,6 @@
                         #   `get` using `WithIdRequestBuilderUriTemplate`
 </pre>
       </td>
-      <td valign="top">
-        <p>Result:&nbsp;</p>
-        <pre>
-<a href="out/main/python/4.yaml">out/main/python/4.yaml</a>
-├── api_sdk.py                               # main entry point
-│                                            #   has
-└── item                                     
-    ├── with_path_item_request_builder.py    # UriTemplate = "{+baseurl}/{path}"
-    │                                        # RequestBuilder has `with_id(self,) -> WithIdRequestBuilder`
-    └── item                                 
-        └── with_id_request_builder.py       # UriTemplate = "{+baseurl}/{path}/{id}/"
-                                             # RequestBuilder has the standard methods
-                                             #   and `with_url(self,raw_url: str) -> WithIdRequestBuilder`
-</pre>
-      </td>
     </tr>
     <tr>
       <td valign="top">
@@ -173,7 +126,10 @@
         </p>
       </td>
       <td valign="top">
-        <p>Result:&nbsp;</p>
+        <p>
+          Result:&nbsp;?<br>
+          ...<br>
+        </p>
         <pre>
 <a href="out/main/typescript/5.yaml">out/main/typescript/5.yaml</a>
 ├── apiSdk.ts           # main entry point
@@ -192,21 +148,6 @@
                         #   `get` using `BarRequestBuilderUriTemplate`
 </pre>
       </td>
-      <td valign="top">
-        <p>Result:&nbsp;</p>
-        <pre>
-<a href="out/main/python/5.yaml">out/main/python/5.yaml</a>
-├── api_sdk.py                               # main entry point
-│                                            #   has
-└── item                                     
-    ├── with_path_item_request_builder.py    # UriTemplate = "{+baseurl}/{path}"
-    │                                        # RequestBuilder has `bar(self) -> BarRequestBuilder`
-    └── bar                                  
-        └── bar_request_builder.py           # UriTemplate = "{+baseurl}/{path}/bar"
-                                             # RequestBuilder has the standard methods
-                                             #   and `with_url(self,raw_url: str) -> BarRequestBuilder`
-</pre>
-      </td>
     </tr>
     <tr>
       <td valign="top">
@@ -217,30 +158,20 @@
         </p>
       </td>
       <td valign="top">
-        <p>Result:&nbsp;</p>
+        <p>
+          Result:&nbsp;?<br>
+          ...<br>
+        </p>
         <pre>
 <a href="out/main/typescript/6.yaml">out/main/typescript/6.yaml</a>
 ├── apiSdk.ts       # main entry point
 │                   #   has `get foo()`
 └── foo             
-    └── index.ts    # FooRequestBuilderUriTemplate = "{+baseurl}/foo/"
+    └── index.ts    # FooRequestBuilderUriTemplate = "{+baseurl}/foo"
                     # RequestBuilder has the standard methods
                     # no NavigationMetadata constant
                     # FooRequestBuilderRequestsMetadata has
-                    #   `get` using `FooRequestBuilderUriTemplate`
-</pre>
-      </td>
-      <td valign="top">
-        <p>Result:&nbsp;</p>
-        <pre>
-<a href="out/main/python/6.yaml">out/main/python/6.yaml</a>
-├── api_sdk.py                    # main entry point
-│                                 #   has `foo(self) -> FooRequestBuilder`
-└── foo                           
-    └── foo_request_builder.py    # UriTemplate = "{+baseurl}/foo/"
-                                  # RequestBuilder has the standard methods
-                                  #   and `Get`
-                                  #   and `with_url(self,raw_url: str) -> FooRequestBuilder`
+                    #   `get` using `FooRequestBuilderUriTemplate` twice
 </pre>
       </td>
     </tr>
@@ -253,30 +184,20 @@
         </p>
       </td>
       <td valign="top">
-        <p>Result:&nbsp;</p>
+        <p>
+          Result:&nbsp;?<br>
+          ...<br>
+        </p>
         <pre>
 <a href="out/main/typescript/7.yaml">out/main/typescript/7.yaml</a>
 ├── apiSdk.ts       # main entry point
 │                   #   has `get foo()`
 └── foo             
-    └── index.ts    # FooRequestBuilderUriTemplate = "{+baseurl}/foo/"
+    └── index.ts    # FooRequestBuilderUriTemplate = "{+baseurl}/foo"
                     # RequestBuilder has the standard methods
                     # no NavigationMetadata constant
                     # FooRequestBuilderRequestsMetadata has
                     #   `get` using `FooRequestBuilderUriTemplate` twice
-</pre>
-      </td>
-      <td valign="top">
-        <p>Result:&nbsp;</p>
-        <pre>
-<a href="out/main/python/7.yaml">out/main/python/7.yaml</a>
-├── api_sdk.py                    # main entry point
-│                                 #   has `foo(self) -> FooRequestBuilder`
-└── foo                           
-    └── foo_request_builder.py    # UriTemplate = "{+baseurl}/foo"
-                                  # RequestBuilder has the standard methods
-                                  #   and `Get`
-                                  #   and `with_url(self,raw_url: str) -> FooRequestBuilder`
 </pre>
       </td>
     </tr>
@@ -289,7 +210,10 @@
         </p>
       </td>
       <td valign="top">
-        <p>Result:&nbsp;</p>
+        <p>
+          Result:&nbsp;?<br>
+          ...<br>
+        </p>
         <pre>
 <a href="out/main/typescript/8.yaml">out/main/typescript/8.yaml</a>
 ├── apiSdk.ts           # main entry point
@@ -310,23 +234,6 @@
                         #   `get` using `BarRequestBuilderUriTemplate`
 </pre>
       </td>
-      <td valign="top">
-        <p>Result:&nbsp;</p>
-        <pre>
-<a href="out/main/python/8.yaml">out/main/python/8.yaml</a>
-├── api_sdk.py                        # main entry point
-│                                     #   has `foo(self) -> FooRequestBuilder`
-└── foo                               
-    ├── foo_request_builder.py        # UriTemplate = "{+baseurl}/foo"
-    │                                 # RequestBuilder has the standard methods
-    │                                 #   and `with_url(self,raw_url: str) -> FooRequestBuilder`
-    │                                 #   and `bar(self) -> BarRequestBuilder`
-    └── bar                           
-        └── bar_request_builder.py    # UriTemplate = "{+baseurl}/foo/bar"
-                                      # RequestBuilder has the standard methods
-                                      #   and `with_url(self,raw_url: str) -> BarRequestBuilder`
-</pre>
-      </td>
     </tr>
     <tr>
       <td valign="top">
@@ -337,7 +244,10 @@
         </p>
       </td>
       <td valign="top">
-        <p>Result:&nbsp;</p>
+        <p>
+          Result:&nbsp;?<br>
+          ...<br>
+        </p>
         <pre>
 <a href="out/main/typescript/9.yaml">out/main/typescript/9.yaml</a>
 ├── apiSdk.ts           # main entry point
@@ -358,23 +268,6 @@
                         #   `get` using `BarRequestBuilderUriTemplate`
 </pre>
       </td>
-      <td valign="top">
-        <p>Result:&nbsp;</p>
-        <pre>
-<a href="out/main/python/9.yaml">out/main/python/9.yaml</a>
-├── api_sdk.py                        # main entry point
-│                                     #   has `foo(self) -> FooRequestBuilder`
-└── foo                               
-    ├── foo_request_builder.py        # UriTemplate = "{+baseurl}/foo"
-    │                                 # RequestBuilder has the standard methods
-    │                                 #   and `with_url(self,raw_url: str) -> FooRequestBuilder`
-    │                                 #   and `bar(self) -> BarRequestBuilder`
-    └── bar                           
-        └── bar_request_builder.py    # UriTemplate = "{+baseurl}/foo/bar/"
-                                      # RequestBuilder has the standard methods
-                                      #   and `with_url(self,raw_url: str) -> BarRequestBuilder`
-</pre>
-      </td>
     </tr>
     <tr>
       <td valign="top">
@@ -385,7 +278,10 @@
         </p>
       </td>
       <td valign="top">
-        <p>Result:&nbsp;</p>
+        <p>
+          Result:&nbsp;?<br>
+          ...<br>
+        </p>
         <pre>
 <a href="out/main/typescript/10.yaml">out/main/typescript/10.yaml</a>
 ├── apiSdk.ts       # main entry point
@@ -405,22 +301,6 @@
                     #   `get` using `WithPathItemRequestBuilderUriTemplate`
 </pre>
       </td>
-      <td valign="top">
-        <p>Result:&nbsp;</p>
-        <pre>
-<a href="out/main/python/10.yaml">out/main/python/10.yaml</a>
-├── api_sdk.py                               # main entry point
-│                                            #   has `foo(self) -> FooRequestBuilder`
-├── foo                                      
-│   └── foo_request_builder.py               # UriTemplate = "{+baseurl}/foo"
-│                                            # RequestBuilder has the standard methods
-│                                            #   and `with_url(self,raw_url: str) -> FooRequestBuilder`
-└── item                                     
-    └── with_path_item_request_builder.py    # UriTemplate = "{+baseurl}/{path}"
-                                             # RequestBuilder has the standard methods
-                                             #   and `with_url(self,raw_url: str) -> WithPathItemRequestBuilder`
-</pre>
-      </td>
     </tr>
     <tr>
       <td valign="top">
@@ -431,7 +311,10 @@
         </p>
       </td>
       <td valign="top">
-        <p>Result:&nbsp;</p>
+        <p>
+          Result:&nbsp;?<br>
+          ...<br>
+        </p>
         <pre>
 <a href="out/main/typescript/11.yaml">out/main/typescript/11.yaml</a>
 ├── apiSdk.ts       # main entry point
@@ -451,22 +334,6 @@
                     #   `get` using `WithPathRequestBuilderUriTemplate`
 </pre>
       </td>
-      <td valign="top">
-        <p>Result:&nbsp;</p>
-        <pre>
-<a href="out/main/python/11.yaml">out/main/python/11.yaml</a>
-├── api_sdk.py                          # main entry point
-│                                       #   has `foo(self) -> FooRequestBuilder`
-├── foo                                 
-│   └── foo_request_builder.py          # UriTemplate = "{+baseurl}/foo"
-│                                       # RequestBuilder has the standard methods
-│                                       #   and `with_url(self,raw_url: str) -> FooRequestBuilder`
-└── item                                
-    └── with_path_request_builder.py    # UriTemplate = "{+baseurl}/{path}/"
-                                        # RequestBuilder has the standard methods
-                                        #   and `with_url(self,raw_url: str) -> WithPathRequestBuilder`
-</pre>
-      </td>
     </tr>
     <tr>
       <td valign="top">
@@ -477,7 +344,10 @@
         </p>
       </td>
       <td valign="top">
-        <p>Result:&nbsp;</p>
+        <p>
+          Result:&nbsp;?<br>
+          ...<br>
+        </p>
         <pre>
 <a href="out/main/typescript/12.yaml">out/main/typescript/12.yaml</a>
 ├── apiSdk.ts       # main entry point
@@ -497,22 +367,6 @@
                     #   `get` using `WithPathItemRequestBuilderUriTemplate`
 </pre>
       </td>
-      <td valign="top">
-        <p>Result:&nbsp;</p>
-        <pre>
-<a href="out/main/python/12.yaml">out/main/python/12.yaml</a>
-├── api_sdk.py                               # main entry point
-│                                            #   has `foo(self) -> FooRequestBuilder`
-├── foo                                      
-│   └── foo_request_builder.py               # UriTemplate = "{+baseurl}/foo/"
-│                                            # RequestBuilder has the standard methods
-│                                            #   and `with_url(self,raw_url: str) -> FooRequestBuilder`
-└── item                                     
-    └── with_path_item_request_builder.py    # UriTemplate = "{+baseurl}/{path}"
-                                             # RequestBuilder has the standard methods
-                                             #   and `with_url(self,raw_url: str) -> WithPathItemRequestBuilder`
-</pre>
-      </td>
     </tr>
     <tr>
       <td valign="top">
@@ -523,7 +377,10 @@
         </p>
       </td>
       <td valign="top">
-        <p>Result:&nbsp;</p>
+        <p>
+          Result:&nbsp;?<br>
+          ...<br>
+        </p>
         <pre>
 <a href="out/main/typescript/13.yaml">out/main/typescript/13.yaml</a>
 ├── apiSdk.ts       # main entry point
@@ -543,22 +400,6 @@
                     #   `get` using `WithPathRequestBuilderUriTemplate`
 </pre>
       </td>
-      <td valign="top">
-        <p>Result:&nbsp;</p>
-        <pre>
-<a href="out/main/python/13.yaml">out/main/python/13.yaml</a>
-├── api_sdk.py                          # main entry point
-│                                       #   has `foo(self) -> FooRequestBuilder`
-├── foo                                 
-│   └── foo_request_builder.py          # UriTemplate = "{+baseurl}/foo/"
-│                                       # RequestBuilder has the standard methods
-│                                       #   and `with_url(self,raw_url: str) -> FooRequestBuilder`
-└── item                                
-    └── with_path_request_builder.py    # UriTemplate = "{+baseurl}/{path}/"
-                                        # RequestBuilder has the standard methods
-                                        #   and `with_url(self,raw_url: str) -> WithPathRequestBuilder`
-</pre>
-      </td>
     </tr>
     <tr>
       <td valign="top">
@@ -569,7 +410,10 @@
         </p>
       </td>
       <td valign="top">
-        <p>Result:&nbsp;</p>
+        <p>
+          Result:&nbsp;?<br>
+          ...<br>
+        </p>
         <pre>
 <a href="out/main/typescript/14.yaml">out/main/typescript/14.yaml</a>
 ├── apiSdk.ts       # main entry point
@@ -583,21 +427,6 @@
                     #   `get` using `WithPathItemRequestBuilderUriTemplate`
 </pre>
       </td>
-      <td valign="top">
-        <p>Result:&nbsp;</p>
-        <pre>
-<a href="out/main/python/14.yaml">out/main/python/14.yaml</a>
-├── api_sdk.py                               # main entry point
-│                                            #   has
-└── item                                     
-    ├── with_path_item_request_builder.py    # UriTemplate = "{+baseurl}/{path}"
-    │                                        # RequestBuilder has the standard methods
-    │                                        #   and `with_url(self,raw_url: str) -> WithPathItemRequestBuilder`
-    └── with_path_request_builder.py         # UriTemplate = "{+baseurl}/{path}/"
-                                             # RequestBuilder has the standard methods
-                                             #   and `with_url(self,raw_url: str) -> WithPathRequestBuilder`
-</pre>
-      </td>
     </tr>
     <tr>
       <td valign="top">
@@ -608,7 +437,10 @@
         </p>
       </td>
       <td valign="top">
-        <p>Result:&nbsp;</p>
+        <p>
+          Result:&nbsp;?<br>
+          ...<br>
+        </p>
         <pre>
 <a href="out/main/typescript/15.yaml">out/main/typescript/15.yaml</a>
 ├── apiSdk.ts       # main entry point
@@ -622,21 +454,6 @@
                     #   `get` using `WithPathItemRequestBuilderUriTemplate`
 </pre>
       </td>
-      <td valign="top">
-        <p>Result:&nbsp;</p>
-        <pre>
-<a href="out/main/python/15.yaml">out/main/python/15.yaml</a>
-├── api_sdk.py                               # main entry point
-│                                            #   has
-└── item                                     
-    ├── with_path_item_request_builder.py    # UriTemplate = "{+baseurl}/{path}"
-    │                                        # RequestBuilder has the standard methods
-    │                                        #   and `with_url(self,raw_url: str) -> WithPathItemRequestBuilder`
-    └── with_path_request_builder.py         # UriTemplate = "{+baseurl}/{path}/"
-                                             # RequestBuilder has the standard methods
-                                             #   and `with_url(self,raw_url: str) -> WithPathRequestBuilder`
-</pre>
-      </td>
     </tr>
     <tr>
       <td valign="top">
@@ -647,7 +464,10 @@
         </p>
       </td>
       <td valign="top">
-        <p>Result:&nbsp;</p>
+        <p>
+          Result:&nbsp;?<br>
+          ...<br>
+        </p>
         <pre>
 <a href="out/main/typescript/16.yaml">out/main/typescript/16.yaml</a>
 ├── apiSdk.ts           # main entry point
@@ -668,23 +488,6 @@
                         #   `get` using `PathItemRequestBuilderUriTemplate`
 </pre>
       </td>
-      <td valign="top">
-        <p>Result:&nbsp;</p>
-        <pre>
-<a href="out/main/python/16.yaml">out/main/python/16.yaml</a>
-├── api_sdk.py                               # main entry point
-│                                            #   has
-└── item                                     
-    ├── with_path_item_request_builder.py    # UriTemplate = "{+baseurl}/{path}"
-    │                                        # RequestBuilder has the standard methods
-    │                                        #   and `by_id(self,id: str) -> PathItemRequestBuilder`
-    │                                        #   and `with_url(self,raw_url: str) -> WithPathItemRequestBuilder`
-    └── item                                 
-        └── path_item_request_builder.py     # UriTemplate = "{+baseurl}/{path}/{id}"
-                                             # RequestBuilder has the standard methods
-                                             #   and `with_url(self,raw_url: str) -> PathItemRequestBuilder`
-</pre>
-      </td>
     </tr>
     <tr>
       <td valign="top">
@@ -695,7 +498,10 @@
         </p>
       </td>
       <td valign="top">
-        <p>Result:&nbsp;</p>
+        <p>
+          Result:&nbsp;?<br>
+          ...<br>
+        </p>
         <pre>
 <a href="out/main/typescript/17.yaml">out/main/typescript/17.yaml</a>
 ├── apiSdk.ts           # main entry point
@@ -715,24 +521,6 @@
                         #   `get` using `PathItemRequestBuilderUriTemplate`
 </pre>
       </td>
-      <td valign="top">
-        <p>Result:&nbsp;</p>
-        <pre>
-<a href="out/main/python/17.yaml">out/main/python/17.yaml</a>
-├── api_sdk.py                               # main entry point
-│                                            #   has
-└── item                                     
-    ├── with_path_item_request_builder.py    # UriTemplate = "{+baseurl}/{path}"
-    │                                        # RequestBuilder has `by_id(self,id: str) -> PathItemRequestBuilder`
-    ├── with_path_request_builder.py         # UriTemplate = "{+baseurl}/{path}/"
-    │                                        # RequestBuilder has the standard methods
-    │                                        #   and `with_url(self,raw_url: str) -> WithPathRequestBuilder`
-    └── item                                 
-        └── path_item_request_builder.py     # UriTemplate = "{+baseurl}/{path}/{id}"
-                                             # RequestBuilder has the standard methods
-                                             #   and `with_url(self,raw_url: str) -> PathItemRequestBuilder`
-</pre>
-      </td>
     </tr>
     <tr>
       <td valign="top">
@@ -743,7 +531,10 @@
         </p>
       </td>
       <td valign="top">
-        <p>Result:&nbsp;</p>
+        <p>
+          Result:&nbsp;?<br>
+          ...<br>
+        </p>
         <pre>
 <a href="out/main/typescript/18.yaml">out/main/typescript/18.yaml</a>
 ├── apiSdk.ts           # main entry point
@@ -768,26 +559,6 @@
                         # no NavigationMetadata constant
                         # FooItemRequestBuilderRequestsMetadata has
                         #   `get` using `FooItemRequestBuilderUriTemplate`
-</pre>
-      </td>
-      <td valign="top">
-        <p>Result:&nbsp;</p>
-        <pre>
-<a href="out/main/python/18.yaml">out/main/python/18.yaml</a>
-├── api_sdk.py                             # main entry point
-│                                          #   has `foo(self) -> FooRequestBuilder`
-└── foo                                    
-    ├── foo_request_builder.py             # UriTemplate = "{+baseurl}/foo"
-    │                                      # RequestBuilder has `by_id(self,id: str) -> FooItemRequestBuilder`
-    │                                      #   and `bar(self) -> BarRequestBuilder`
-    ├── bar                                
-    │   └── bar_request_builder.py         # UriTemplate = "{+baseurl}/foo/bar/"
-    │                                      # RequestBuilder has the standard methods
-    │                                      #   and `with_url(self,raw_url: str) -> BarRequestBuilder`
-    └── item                               
-        └── foo_item_request_builder.py    # UriTemplate = "{+baseurl}/foo/{id}"
-                                           # RequestBuilder has the standard methods
-                                           #   and `with_url(self,raw_url: str) -> FooItemRequestBuilder`
 </pre>
       </td>
     </tr>
