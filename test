@@ -4,20 +4,83 @@
 
 set -e
 
-mode="${1,,}"
-lang="${2:-typescript}"
-lang="${lang,,}"
+mode="main"
+lang="typescript"
+results_only=0
 
 [[ -n "$kiota_main" ]] || { echo "Error: must define kiota_main as path to a kiota exe" >&2; exit 1; }
 [[ -n "$kiota_pr" ]] || { echo "Error: must define kiota_pr as path to a kiota exe" >&2; exit 1; }
-[[ "$mode" == "main" || "$mode" == "pr" ]] || { echo "Error: must provide argument mode as 'main' or 'pr'" >&2; exit 1; }
-[[ "$lang" =~ ^(cli|csharp|go|java|php|python|ruby|swift|typescript)$ ]] || { echo "Error: must provide a valid language" >&2; exit 1; }
+
+parsed_args=$(getopt --name "test" -o m:l:rh -l mode:,lang:,results-only,help -- "$@")
+eval set -- "$parsed_args"
+while :; do
+  case "$1" in
+    -m|--mode)
+      mode="$2"
+      [[ "$mode" == "main" || "$mode" == "pr" ]] || { echo "Error: mode must be 'main' or 'pr'" >&2; exit 1; }
+      shift 2
+      ;;
+    -l|--lang)
+      lang="${2,,}"
+      [[ "$lang" =~ ^(cli|csharp|go|java|php|python|ruby|swift|typescript)$ ]] || { echo "Error: must provide a valid language" >&2; exit 1; }
+      langs+=("$lang")
+      shift 2
+      ;;
+    -r|--results-only)
+      results_only=1
+      shift 1
+      ;;
+    --)
+      shift 1
+      break
+      ;;
+    *)
+      echo "Error: got $1" >&2
+      exit 1
+      ;;
+  esac
+done
+
+test_paths=()
+if [[ "$#" -gt 0 ]]; then
+  for test_name in "$@"; do
+    if [[ -n "$test_name" ]]; then
+      [[ "$test_name" =~ ^[0-9]+$ ]] || { echo "Error: test name must be a number" >&2; exit 1; }
+      test_path="tests/$test_name.yaml"
+      [[ -f "$test_path" ]] || { echo "Error: test does not exist: $test_path" >&2; exit 1; }
+      test_paths+=("$test_path")
+    fi
+  done
+else
+  while read -r test_path || [[ -n "$test_path" ]]; do
+    test_paths+=("$test_path")
+  done < <(find tests/ -type f -regextype posix-extended -regex "tests/[0-9]+\.yaml" | sort -V)
+fi
 
 kiota="$kiota_main"
 [[ "$mode" == "pr" ]] && kiota="$kiota_pr"
 
 export KIOTA_OFFLINE_ENABLED=true KIOTA_TUTORIAL_ENABLED=false
 
-while read -r file || [[ -n "$file" ]]; do
-    "$kiota" generate --exclude-backward-compatible --class-name "ApiSdk" --namespace-name "apiSdk" --language "$lang" --clear-cache --clean-output --output "out/$mode/$lang/${file##*/}" --openapi "$file"
-done < <(find tests/ -type f -name '*.yaml' | sort -V)
+for test_path in "${test_paths[@]}"; do
+  test_file="${test_path##*/}"
+  out_path="out/$mode/$lang/$test_file"
+  if [[ "$results_only" -eq 0 ]]; then
+    "$kiota" generate --exclude-backward-compatible --class-name "ApiSdk" --namespace-name "apiSdk" --language "$lang" --clear-cache --clean-output --output "$out_path" --openapi "$test_path"
+    find "$out_path" -type f -exec dos2unix -q {} \+
+  fi
+  results_path="results/$mode/$lang/${test_file%\.yaml}.md"
+  new_md5="$(md5sum "$test_path" | cut -d' ' -f1)"
+  if [[ -f "$results_path" ]]; then
+    old_md5="$(head -n 1 "$results_path" | sed -r 's/<!-- ([^ ]+) -->/\1/g')"
+    if [[ -z "$old_md5" ]]; then
+      echo "Warning: existing results file '$results_path' is missing an md5 checksum comment!"
+    elif [[ "$old_md5" != "$new_md5" ]]; then
+      echo "Warning: existing results file '$results_path' has a different checksum and needs review!"
+    fi
+  else
+    results_path_parent="${results_path%/*}"
+    mkdir -p "$results_path_parent"
+    printf '<!-- %s -->\n\n?\n\n...\n' "$new_md5" > "$results_path"
+  fi
+done
