@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+
+with_tree="$with_tree"
+result_source="$result_source"
+lang="$lang"
+test_file="$test_file"
+line="$1"
+
+cur_path="$(sed -r 's/.+ href="([^"]+)".+/\1/g' <<< "$line")"
+
+if [[ "$with_tree" == "ascii" ]]; then
+  # format as plain ascii tree
+  # replace nbsp with U+00A0
+  line="$(sed -r 's,([^<]*)<a href="[^"]+">([^<]+)</a>.*,\1\2,g' <<< "$line" | sed -r -e 's/&nbsp;/ /g' -e 's/─/──/g')"
+fi
+
+result_path="out/$result_source/$lang/$test_file"
+extension="$(sed -r -e 's/([^─]+)── .+/\1/g' -e 's/├/│/g' -e 's/└/ /g' <<< "$line")"
+
+if [[ "$cur_path" == "$result_path" ]]; then
+  printf '<a href="%s">%s</a>\n\n' "$line" "$line"
+elif [[ "$cur_path" =~ apiSdk\.ts ]]; then
+  #printf '%s\n%s\n' "$line" "# main entry point has $(sed -rn '/^export interface ApiSdk/,/^}/p' "$cur_path" | sed -rn '/;/ s/^ +([^(]+\([^)]*\)).+/`\1`/gp' | paste -s -d',' | sed 's/,/ and /g')"
+  i=0
+  while IFS= read -r result_line || [[ -n "$result_line" ]]; do
+    if [[ -n "$result_line" ]]; then
+      if [[ $i > 0 ]]; then
+        printf '%b\n%s\n' "$extension" "# $result_line"
+      else
+        printf '%b\n%s\n' "$line" "# $result_line"
+      fi
+    fi
+    i=$((i+1))
+  done < <(sed -rn '/^export interface ApiSdk/,/^}/p' "$cur_path" \
+          | sed -rn '/;/ s/^ +([^(]+\([^)]*\)).+/`\1`/gp' \
+          | paste -s -d',' \
+          | sed -r -e 's/,/\n  and /g' -e '1 s/.*/main entry point\n  has &/g' \
+          )
+elif [[ "$cur_path" =~ \.ts ]]; then
+  printf '%s\n%s\n' "$line" "# $(sed -rn '/UriTemplate = / s/export const ([^;]+);/\1/gp' "$cur_path")"
+
+  # printf '%b\n%s\n' "$extension" "# RequestBuilder has $(sed -rn '/^export interface [^ ]+ extends BaseRequestBuilder/,/^}/p' "$cur_path" | sed -rn '/;/ s/^ +([^(]+\([^)]*\)).+/`\1`/gp' | sed -r '/(get\(|toGetRequestInformation\()/ s/(get|toGetRequestInformation)\([^`]+/\1/g' | paste -s -d',' | sed 's/,/\nand /g' | sed -r 's/`get` and `toGetRequestInformation`/the standard methods/g')"
+  while IFS= read -r result_line || [[ -n "$result_line" ]]; do
+    if [[ -n "$result_line" ]]; then
+      printf '%b\n%s\n' "$extension" "# $result_line"
+    fi
+  done < <(sed -rn '/^export interface [^ ]+ extends BaseRequestBuilder/,/^}/p' "$cur_path" \
+          | sed -rn '/;/ s/^ +([^(]+\([^)]*\)).+/`\1`/gp' \
+          | sed -r '/(get\(|toGetRequestInformation\()/ s/(get|toGetRequestInformation)\([^`]+/\1/g' \
+          | sed -r '$!N;s/`get`\n`toGetRequestInformation`/the standard methods/g;P;D' \
+          | awk '{ if ($0 ~ /^the standard methods$/) print $0; else arr[lines++]=$0; } END { for (i=0;i<lines;i++) print arr[i] }' \
+          | paste -s -d',' \
+          | sed -r -e 's/,/\n  and /g' -e '1 s/.*/RequestBuilder has &/g' \
+          )
+
+  i=0
+  while IFS= read -r result_line || [[ -n "$result_line" ]]; do
+    if [[ -n "$result_line" ]]; then
+      printf '%b\n%s\n' "$extension" "# $result_line"
+      i=$((i+1))
+    fi
+  done < <(sed -rn '/export const [^ ]+NavigationMetadata/,/};/ p' "$cur_path" \
+          | sed -rn -e '1 s/^export const ([^:]+): .+/\1 has/gp' -e '$!N;s/^ +([^:]+): \{\n +requestsMetadata: ([^,]+),/  `\1` using `\2`/gp;D;' \
+          | { \
+              read -r first; printf '%s\n' "$first"; \
+              cat; \
+            } \
+          )
+  [[ "$i" == 0 ]] && printf '%b\n%s\n' "$extension" "# no NavigationMetadata constant"
+
+  i=0
+  while IFS= read -r result_line || [[ -n "$result_line" ]]; do
+    if [[ -n "$result_line" ]]; then
+      printf '%b\n%s\n' "$extension" "# $result_line"
+      i=$((i+1))
+    fi
+  done < <(sed -rn '/export const [^ ]+RequestsMetadata/,/};/ p' "$cur_path" \
+          | sed -rn -e '1 s/^export const ([^:]+): .+/\1 has/gp' -e '2,$ s/^ +([^:]+): \{/`\1` using/gp;/uriTemplate/ s/^ +uriTemplate: ([^,]+),/`\1`/gp;' \
+          | { \
+              read -r first; printf '%s\n' "$first"; \
+              sed -r -e '1N;2N;$!N;/^(.*)\n(.*)\n\1\n\2$/{s/^(.*)\n(.*)\n\1\n\2$/  \1 \2 twice/g;$!N;$!N;$!N;bb;};s/^(`[^`]+` using)\n(.+)/  \1 \2/g;:b;P;D' \
+              | sed -r '$!N;s/^(`[^`]+` using)\n(.+)/  \1 \2/g;P;D'; \
+            } \
+          )
+  [[ "$i" == 0 ]] && printf '%b\n%s\n' "$extension" "# no RequestsMetadata constant"
+else
+  printf '%s\n\n' "$line"
+fi
+
+#printf '%s\n' ".$cur_path." >&2
+#printf '%s\n%s\n' "$line" "wow .$with_tree. .$result_source. .$lang. .$test_file." >&2

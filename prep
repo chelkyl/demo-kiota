@@ -4,101 +4,297 @@
 
 set -e
 
-mode="$1"
+# basic or full
+mode="basic"
+# file to write to
+out_file="report_template.md"
+# 1 - include main column for each lang
+# 2 - include pr column for each lang
+# 3 - include both
+ADD_MAIN=1
+ADD_PR=2
+with_source=0
+# tree - include file tree (ascii) for main/pr and each lang
+# html - render as html
+# blank - skip
+with_tree=
+# 1 - include test results for main/pr and each lang
+# 0 - skip
+with_auto_results=0
+# lang - group result columns by lang
+# source - group result columns by result source
+with_group=lang
+# langs to create result columns for
+langs=()
 
-if [[ -z "$mode" ]]; then
-  mode="table"
-elif [[ "$mode" == "table" || "$mode" == "code" ]]; then
-  shift 1
+declare -rA LANG_MAP=(\
+  ["cli"]="CLI"       \
+  ["csharp"]="C#"     \
+  ["go"]="Go"         \
+  ["java"]="Java"     \
+  ["php"]="PHP"       \
+  ["python"]="Python" \
+  ["ruby"]="Ruby"     \
+  ["swift"]="Swift"   \
+  ["typescript"]="TS" \
+)
+
+parsed_args=$(getopt --name "prep" -o m:o:l:g:npt::r -l mode:,output:,lang:,group:,main,pr,tree::,results -- "$@")
+eval set -- "$parsed_args"
+while :; do
+  case "$1" in
+    -m|--mode)
+      mode="$2"
+      [[ "$mode" == "basic" || "$mode" == "full" ]] || { echo "Error: mode must be 'basic' or 'full'" >&2; exit 1; }
+      shift 2
+      ;;
+    -o|--output)
+      out_file="$2"
+      shift 2
+      ;;
+    -l|--lang)
+      lang="${2,,}"
+      grep -q -E "^($(echo "${!LANG_MAP[@]}" | tr ' ' '|'))$" <<< "$lang" || { echo "Error: must provide a valid language" >&2; exit 1; }
+      langs+=("$lang")
+      shift 2
+      ;;
+    -g|--group)
+      with_group="$2"
+      [[ "$with_group" == "lang" || "$with_group" == "source" ]] || { echo "Error: group must be 'lang' or 'source'" >&2; exit 1; }
+      shift 2
+      ;;
+    -n|--main)
+      with_source=$((with_source | ADD_MAIN))
+      shift 1
+      ;;
+    -p|--pr)
+      with_source=$((with_source | ADD_PR))
+      shift 1
+      ;;
+    -t|--tree)
+      with_tree="${2:-html}"
+      [[ "$with_tree" == "ascii" || "$with_tree" == "html" ]] || { echo "Error: tree mode must be 'ascii' or 'html'" >&2; exit 1; }
+      shift 2
+      ;;
+    -r|--results)
+      with_auto_results=1
+      shift 1
+      ;;
+    --)
+      shift 1
+      break
+      ;;
+    *)
+      echo "Error: got $1" >&2
+      exit 1
+      ;;
+  esac
+done
+
+test_names=()
+if [[ "$#" -eq 0 ]]; then
+  while read -r test_path || [[ -n "$test_path" ]]; do
+    test_file="${test_path#*/}"
+    test_name="${test_file%\.yaml}"
+    test_names+=("$test_name")
+  done < <(find tests/ -type f -regextype posix-extended -regex "tests/[0-9]+\.yaml" | sort -V)
 else
-  echo "Error: must provide a valid mode" >&2
-  exit 1
+  for test_name in "$@"; do
+    [[ "$test_name" =~ ^[0-9]+$ ]] || { echo "Error: test name must be a number" >&2; exit 1; }
+    test_path="tests/$test_name.yaml"
+    [[ -f "$test_path" ]] || { echo "Error: test does not exist: $test_path" >&2; exit 1; }
+    test_names+=("$test_name")
+  done
 fi
 
-out_file=report_template.md
+if [[ "${#langs[@]}" -eq 0 ]]; then
+  langs+=("typescript" "python")
+fi
 
-if [[ "$mode" == "table" ]]; then
-  langs=()
-  if [[ "$#" -eq 0 ]]; then
-    langs+=("TS" "C#")
+[[ "$with_source" == 0 ]] && with_source="$ADD_MAIN"
+result_sources=()
+if [[ $((with_source & ADD_MAIN)) == "$ADD_MAIN" ]]; then
+  result_sources+=("main")
+fi
+if [[ $((with_source & ADD_PR)) == "$ADD_PR" ]]; then
+  result_sources+=("pr")
+fi
+
+write_header_result_column() {
+  printf '      <th>%s kiota %s Results</th>\n' "${LANG_MAP[$lang]}" "$result_source"
+}
+
+write_header_result_columns() {
+  if [[ "$with_group" == "lang" ]]; then
+    for lang in "${langs[@]}"; do
+      for result_source in "${result_sources[@]}"; do
+        write_header_result_column
+      done
+    done
   else
-    for lang in "$@"; do langs+=("$lang"); done
+    for result_source in "${result_sources[@]}"; do
+      for lang in "${langs[@]}"; do
+        write_header_result_column
+      done
+    done
+  fi
+}
+
+write_header() {
+  printf '  <thead>\n'
+  printf '    <tr>\n'
+  printf '      <th>Test URI Paths</th>\n'
+  write_header_result_columns
+  printf '    </tr>\n'
+  printf '  </thead>\n'
+}
+
+write_result_column_with_results() {
+  # globals: with_tree result_source lang test_file
+  # reads from stdin
+  local result_writer="writers/$lang"
+  if [[ ! -x "$result_writer" ]]; then
+    cat
+    return 0
+  fi
+  local original_lines=()
+  local result_lines=()
+  local left=""
+  local right=""
+  local max_left=0
+  local is_first=1
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    while mapfile -t -n 2 left_and_right && ((${#left_and_right[@]})); do
+      left="${left_and_right[0]}"
+      right="${left_and_right[1]}"
+      original_lines+=("$left")
+      result_lines+=("$right")
+      if [[ "$is_first" == 0 ]]; then
+        [[ "${#left}" -gt "$max_left" ]] && max_left="${#left}"
+      else
+        is_first=0
+      fi
+    done < <(with_tree="$with_tree" result_source="$result_source" lang="$lang" test_file="$test_file" "$result_writer" "$line")
+  done
+
+  local padding_str="\u00A0"
+  [[ "$with_tree" == "html" ]] && padding_str="&nbsp;"
+  local padding=
+  local i=
+  local x=
+  max_left=$((max_left + 4))
+  for ((i=0; i<${#original_lines[@]}; i++)); do
+    left="${original_lines[$i]}"
+    right="${result_lines[$i]}"
+    padding=""
+    for ((x=${#left};x<max_left;x++)); do
+      padding+="$padding_str"
+    done
+    printf '%s%b%s\n' "$left" "$padding" "$right"
+  done
+}
+
+warned_result_writer=0
+write_result_column() {
+  # globals: with_auto_results with_tree result_source lang test_file
+  printf '      <td valign="top">\n'
+  result_path="results/$result_source/$lang/${test_file%\.yaml}.md"
+  result_summary=""
+  result_body=""
+  if [[ -f "$result_path" ]]; then
+    result_summary="$(head -n 3 "$result_path" | tail -n 1)"
+    result_body="$(tail -n +5 "$result_path" | xargs printf '\n          %s<br>')"
+  fi
+  printf '        <p>\n          Result:&nbsp;%s<br>%s\n        </p>\n' "$result_summary" "$result_body"
+  local result_writer_wrapper=cat
+  if [[ "$with_auto_results" -eq 1 ]]; then
+    result_writer_wrapper=write_result_column_with_results
+    local result_writer="writers/$lang"
+    if [[ ! -x "$result_writer" && "$warned_result_writer" -eq 0 ]]; then
+      echo "Warning: $result_writer does not exist or is not executable, auto-results will not be included" >&2
+      warned_result_writer=1
+    fi
+  fi
+  [[ "$with_tree" == "ascii" ]] && printf '        <pre>\n'
+  tree -I 'models' -I 'kiota-lock.json' --filesfirst -n -H "out/$result_source/$lang/$test_file" "out/$result_source/$lang/$test_file" \
+    | sed -rn '/<body>/,/<br><br><p>/ p' \
+    | tail -n +3 \
+    | head -n '-1' \
+    | sed -r -e 's,//,/,g' \
+          -e 's,──,─,g' \
+          -e 's/─ /─\&nbsp;/g' \
+          -e 's/\&nbsp; /\&nbsp;\&nbsp;/g' \
+    | "$result_writer_wrapper" \
+    | sed -r 's/\t//g'
+  [[ "$with_tree" == "ascii" ]] && printf '</pre>\n'
+  # case "$with_tree" in
+  #   "ascii")
+  #     printf '        <pre>\n'
+  #     tree -I 'models' -I 'kiota-lock.json' --filesfirst "out/$result_source/$lang/$test_file" | head -n '-2' | "$result_writer_wrapper"
+  #     printf '</pre>\n'
+  #     ;;
+  #   "html")
+  #     tree -I 'models' -I 'kiota-lock.json' --filesfirst -n -H "out/$result_source/$lang/$test_file" "out/$result_source/$lang/$test_file" \
+  #       | sed -rn '/<body>/,/<br><br><p>/ p' \
+  #       | tail -n +3 \
+  #       | head -n '-1' \
+  #       | sed -e 's,//,/,g' \
+  #             -e 's,──,─,g' \
+  #             -e 's/─ /─\&nbsp;/g' \
+  #             -e 's/\&nbsp; /\&nbsp;\&nbsp;/g' \
+  #       | "$result_writer_wrapper"
+  #     ;;
+  # esac
+  printf '      </td>\n'
+}
+
+write_row() {
+  printf '    <tr>\n'
+
+  printf '      <td valign="top">\n'
+  printf '        <p>\n'
+  printf '          File:&nbsp;<a href="%s">%s</a><br>\n' "${test_path}" "${test_file}"
+  # shellcheck disable=SC2046
+  printf '          %s<br>\n' $(sed -rn "/^paths:/,$ s/^  ([^: ]+):$/  \1/p" "$test_path")
+  printf '        </p>\n'
+  printf '      </td>\n'
+
+  if [[ "$with_group" == "lang" ]]; then
+    for lang in "${langs[@]}"; do
+      for result_source in "${result_sources[@]}"; do
+        write_result_column
+      done
+    done
+  else
+    for result_source in "${result_sources[@]}"; do
+      for lang in "${langs[@]}"; do
+        write_result_column
+      done
+    done
   fi
 
-  printf "<table>\n" > "$out_file"
-  printf "  <thead>\n" >> "$out_file"
-  printf "    <tr>\n" >> "$out_file"
-  printf "      <th>Test URI Paths</th>\n" >> "$out_file"
-  for lang in "${langs[@]}"; do
-  printf "      <th>%s kiota main version</th>\n" "$lang" >> "$out_file"
+  printf '    </tr>\n'
+}
+
+write_body() {
+  printf '  <tbody>\n'
+
+  for test_name in "${test_names[@]}"; do
+    test_path="tests/$test_name.yaml"
+    test_file="$test_name.yaml"
+    write_row
   done
-  for lang in "${langs[@]}"; do
-  printf "      <th>%s kiota pr version</th>\n" "$lang" >> "$out_file"
-  done
-  printf "    </tr>\n" >> "$out_file"
-  printf "  </thead>\n" >> "$out_file"
 
-  printf "  <tbody>\n" >> "$out_file"
+  printf '  </tbody>\n'
+}
 
-  while read -r file || [[ -n "$file" ]]; do
-  printf "    <tr>\n" >> "$out_file"
-  printf "      <td>\n" >> "$out_file"
-  printf "        <p>\n" >> "$out_file"
-  printf "          File: %s<br>\n" "${file#tests/}" >> "$out_file"
-  printf "          %s<br>\n" $(sed -rn "/^paths:/,$ s/^  ([^: ]+):$/  \1/p" "$file") >> "$out_file"
-  printf "        </p>\n" >> "$out_file"
-  printf "      </td>\n" >> "$out_file"
-  for i in {1..2}; do
-  for lang in "${langs[@]}"; do
-  printf "      <td>\n" >> "$out_file"
-  printf "        <p>.</p>\n" >> "$out_file"
-  printf "      </td>\n" >> "$out_file"
-  done
-  done
-  printf "    </tr>\n" >> "$out_file"
-  done < <(find tests/ -type f -name "*.yaml" | sort -V)
+write_table() {
+  printf '<table>\n'
 
-  printf "  </tbody>\n" >> "$out_file"
-  printf "</table>\n" >> "$out_file"
-: << EOF
+  write_header
+  write_body
 
-<table>
-  <thead>
-    <tr>
-      <th>Path URIs</th>
-      <th>TypeScript Notes</th>
-      <th>C# Notes</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>
-        <p>
-          /foo<br>
-          /foo/<br>
-        </p>
-      </td>
-      <td>
-        <p>Thisasdf a sdklfj  aosihdfoi jfoais oisdjfois osijfao</p>
-      </td>
-      <td>
-        <p>Thisasdf a sdklfj  aosihdfoi jfoais oisdjfois osijfao</p>
-      </td>
-    </tr>
-  </tbody>
-</table>
+  printf '</table>\n'
+}
 
-EOF
-
-else
-  printf '```' > "$out_file"
-
-  while read -r file || [[ -n "$file" ]]; do
-    printf "\nFile: %s\n" "${file#tests/}" >> "$out_file"
-    printf "Paths:\n" >> "$out_file"
-    sed -rn "/^paths:/,$ s/^  ([^: ]+):$/  \1/p" "$file" >> "$out_file"
-    printf 'Results:\n' >> "$out_file"
-  done < <(find tests/ -type f -name "*.yaml" | sort -V)
-
-  printf '```\n' >> "$out_file"
-fi
+write_table > "$out_file"
