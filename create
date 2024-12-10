@@ -2,6 +2,12 @@
 
 # Create a test yaml file
 
+ROOT_DIR="$(cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &>/dev/null && pwd)"
+tests_dir="./tests"
+if [[ -n "$WORKSPACE" ]]; then
+  tests_dir="$ROOT_DIR/$WORKSPACE/$tests_dir"
+fi
+
 test_name=""
 force=0
 list_only=0
@@ -101,7 +107,7 @@ declare -A all_tests
 declare -A all_tests_normalized
 all_tests_ordered=()
 while read -r old_test_path || [[ -n "$old_test_path" ]]; do
-  old_test_file="${old_test_path#*/}"
+  old_test_file="${old_test_path##*/}"
   all_tests_ordered+=("$old_test_file")
   all_tests["$old_test_file"]="$(sed -rn "/^paths:/,$ s/^  ([^: ]+):$/\1/p" "$old_test_path")"
   all_tests_normalized["$old_test_file"]="$(sed -rn "/^paths:/,$ s/^  ([^: ]+):$/\1/p" "$old_test_path" | sort)"
@@ -110,7 +116,7 @@ while read -r old_test_path || [[ -n "$old_test_path" ]]; do
       all_tests_tags["$tag"]="${all_tests_tags[$tag]} $old_test_file"
     done < <(sed -r '1 s/# tags: (.*)/\1/g' "$old_test_path" | tr ' ' '\n')
   fi
-done < <(find tests/ -type f -regextype posix-extended -regex "tests/[0-9]+\.yaml" | sort -V)
+done < <(find "$tests_dir" -type f -regextype posix-extended -regex ".*/tests/[0-9]+\.yaml" | sort -V)
 
 if [[ "$check_only" -eq 1 ]]; then
   found_dupes=0
@@ -148,12 +154,13 @@ if [[ "$list_only" -eq 1 ]]; then
 fi
 
 if [[ -z "$test_name" ]]; then
-  last_test="$(find tests/ -type f -regextype posix-extended -regex "tests/[0-9]+\.yaml" | sort -Vr | sed -rn '1 s,tests/([0-9]+)\.yaml,\1,p')"
+  last_test="$(find "$tests_dir" -type f -regextype posix-extended -regex ".*/tests/[0-9]+\.yaml" | sort -Vr | sed -rn '1 s,.*/tests/([0-9]+)\.yaml,\1,p')"
   [[ -n "$last_test" ]] || last_test=0
   test_name=$((last_test + 1))
 fi
 
-test_path="tests/$test_name.yaml"
+test_file="$test_name.yaml"
+test_path="$tests_dir/$test_file"
 if [[ -f "$test_path" && "$force" -ne 1 ]]; then
   echo "Error: $test_path already exists" >&2
   exit 1
