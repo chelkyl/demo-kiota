@@ -98,9 +98,9 @@ Options:
                         feature branch of kiota
                         can be specified in addition to --main
 
-  -t, --tree <mode>     "tree" or "html" or ""
+  -t, --tree <mode>     "ascii" or "html" or ""
                         "" will skip file tree inclusion in the report
-                        "tree" will include an ascii file tree
+                        "ascii" will include an ascii file tree
                         "html" will format the file tree as html
                         default: ""
 
@@ -116,7 +116,7 @@ Positional Arguments:
 EOF
 }
 
-parsed_args=$(getopt --name "prep" -o ho:l:g:d:npt::i -l help,output:,lang:,group:,header:,main,pr,tree::,highlights -- "$@")
+parsed_args=$(getopt --name "prep" -o ho:l:g:d:npt:i -l help,output:,lang:,group:,header:,main,pr,tree:,highlights -- "$@")
 eval set -- "$parsed_args"
 while :; do
   case "$1" in
@@ -283,9 +283,9 @@ write_result_column() {
   result_summary=""
   result_body=""
   if [[ -f "$result_path" ]]; then
-    # TODO: maybe use emojis for glanceability? ✅ ⚠️ 🚫
-    result_summary="$(head -n 3 "$result_path" | tail -n 1)"
-    result_body="$(tail -n +5 "$result_path" | xargs printf '\n          %s<br>')"
+    # TODO: improve summary and body parsing by ignoring HTML comment lines and reverting to line-number-based selection
+    result_summary="$(sed -rn '/^(ok|error|strange|\?)( .*)?$/p' "$result_path" | sed -r -e 's/^ok ?/✅/' -e 's/^error ?/🚫/' -e 's/^strange ?/⚠️/')"
+    result_body="$(sed -rn '/^(ok|error|strange|\?)( .*)?$/,$p' "$result_path" | tail -n +3 | xargs -d '\n' printf '\n          %s<br>')"
   fi
   printf '        <p>\n          Result:&nbsp;%s<br>%s\n        </p>\n' "$result_summary" "$result_body"
   local tree_writer_wrapper=cat
