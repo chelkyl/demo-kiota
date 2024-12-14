@@ -11,6 +11,7 @@ fi
 test_name=""
 force=0
 list_only=0
+list_in_create_format=0
 check_only=0
 normalize=0
 tags=()
@@ -32,16 +33,20 @@ Options:
                         top of the test file to provide additional metadata
                         can be specified multiple times to add multiple tags
                         ignored in --check mode
+                        in --list mode, only lists tests containing all tags
 
   -h, --help            show this help message then exit
 
   -l, --list            list all test files and the URIs within them then exit
 
+  -r, --list-create     format the output of --list as args you would pass
+                        implies --list
+
   -c, --check           check all test files and exit with error if any tests
                         have the same set of URIs
 
-  -s, --sort            sorts the given URIs before writing the new test file
-                        in --list and --check mode, sorts each set of URIs
+  -s, --sort            sort the given URIs before writing the new test file
+                        in --list and --check mode, sort each set of URIs
                         within each test before outputting/checking
 
   -f, --force           bypass any errors and silence warnings
@@ -59,13 +64,13 @@ URI   a space-separated list of one or more paths to add to the new test file
 EOF
 }
 
-parsed_args=$(getopt --name "create" -o hn:t:lcsf -l help,name:,tag:,list,check,sort,force -- "$@")
+parsed_args=$(getopt --name "create" -o hn:t:lrcsf -l help,name:,tag:,list,list-create,check,sort,force -- "$@")
 eval set -- "$parsed_args"
 while :; do
   case "$1" in
     -n|--name)
       test_name="$2"
-      [[ "$test_name" =~ ^\d+$ ]] || { echo "Error: test name must be a number" >&2; exit 1; }
+      [[ "$test_name" =~ ^[0-9]+$ ]] || { echo "Error: test name must be a number, got '$test_name'" >&2; exit 1; }
       shift 2
       ;;
     -t|--tag)
@@ -74,6 +79,11 @@ while :; do
       ;;
     -l|--list)
       list_only=1
+      shift 1
+      ;;
+    -r|--list-create)
+      list_only=1
+      list_in_create_format=1
       shift 1
       ;;
     -c|--check)
@@ -148,9 +158,16 @@ fi
 
 if [[ "$list_only" -eq 1 ]]; then
   for old_test_file in "${all_tests_ordered[@]}"; do
+    # TODO: implement tag filtering
     [[ "$normalize" -eq 1 ]] && old_test="${all_tests_normalized[$old_test_file]}" || old_test="${all_tests[$old_test_file]}"
-    printf "%s\n" "$old_test_file"
-    printf "%s\n\n" "$old_test"
+    if [[ "$list_in_create_format" -eq 1 ]]; then
+      # [[ -n "${all_test_tags[]}" ]]
+      # TODO: implement tag arg format
+      printf -- "-n %s %s\n" "${old_test_file%.yaml}" "$(tr '\n' ' ' <<< "$old_test")"
+    else
+      printf -- "%s\n" "$old_test_file"
+      printf -- "%s\n\n" "$old_test"
+    fi
   done
   exit 0
 fi
