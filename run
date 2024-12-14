@@ -4,12 +4,12 @@
 
 ROOT_DIR="$(cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &>/dev/null && pwd)"
 tests_dir="./tests"
-results_dir="./tests"
+results_dir="./results"
 generate_dir="./out"
 if [[ -n "$WORKSPACE" ]]; then
-  tests_dir="$ROOT_DIR/$WORKSPACE/$tests_dir"
-  results_dir="$ROOT_DIR/$WORKSPACE/$results_dir"
-  generate_dir="$ROOT_DIR/$WORKSPACE/$generate_dir"
+  tests_dir="$ROOT_DIR/spaces/$WORKSPACE/$tests_dir"
+  results_dir="$ROOT_DIR/spaces/$WORKSPACE/$results_dir"
+  generate_dir="$ROOT_DIR/spaces/$WORKSPACE/$generate_dir"
 fi
 
 mode="main"

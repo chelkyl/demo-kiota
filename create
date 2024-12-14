@@ -5,7 +5,7 @@
 ROOT_DIR="$(cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &>/dev/null && pwd)"
 tests_dir="./tests"
 if [[ -n "$WORKSPACE" ]]; then
-  tests_dir="$ROOT_DIR/$WORKSPACE/$tests_dir"
+  tests_dir="$ROOT_DIR/spaces/$WORKSPACE/$tests_dir"
 fi
 
 test_name=""
@@ -103,6 +103,8 @@ while :; do
   esac
 done
 
+mkdir -p "$tests_dir"
+
 declare -A all_tests
 declare -A all_tests_normalized
 all_tests_ordered=()
@@ -114,7 +116,7 @@ while read -r old_test_path || [[ -n "$old_test_path" ]]; do
   if [[ "$list_only" == 1  ]]; then
     while read -d ' ' -r tag || [[ -n "$tag" ]]; do
       all_tests_tags["$tag"]="${all_tests_tags[$tag]} $old_test_file"
-    done < <(sed -r '1 s/# tags: (.*)/\1/g' "$old_test_path" | tr ' ' '\n')
+    done < <(sed -rn '1 s/# tags: (.*)/\1/gp' "$old_test_path" | tr ' ' '\n')
   fi
 done < <(find "$tests_dir" -type f -regextype posix-extended -regex ".*/tests/[0-9]+\.yaml" | sort -V)
 
@@ -231,4 +233,4 @@ EOF
   i=$((i + 1))
 done
 
-echo "Created: $test_path"
+echo "Created: $test_file"

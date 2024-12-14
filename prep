@@ -4,18 +4,18 @@
 
 ROOT_DIR="$(cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &>/dev/null && pwd)"
 tests_dir="./tests"
-results_dir="./tests"
+results_dir="./results"
 generate_dir="./out"
 if [[ -n "$WORKSPACE" ]]; then
-  tests_dir="$ROOT_DIR/$WORKSPACE/$tests_dir"
-  results_dir="$ROOT_DIR/$WORKSPACE/$results_dir"
-  generate_dir="$ROOT_DIR/$WORKSPACE/$generate_dir"
+  tests_dir="$ROOT_DIR/spaces/$WORKSPACE/$tests_dir"
+  results_dir="$ROOT_DIR/spaces/$WORKSPACE/$results_dir"
+  generate_dir="$ROOT_DIR/spaces/$WORKSPACE/$generate_dir"
 fi
 
 # file to write to
 out_file="./report_template.md"
 if [[ -n "$WORKSPACE" ]]; then
-  out_file="$ROOT_DIR/$WORKSPACE/report_template.md"
+  out_file="$ROOT_DIR/spaces/$WORKSPACE/report_template.md"
 fi
 # 1 - include main column for each lang
 # 2 - include pr column for each lang
@@ -35,6 +35,9 @@ with_highlights=0
 with_group=lang
 # langs to create result columns for
 langs=()
+# used for display in report
+relative_tests_dir="./tests"
+relative_generate_dir="./out"
 
 declare -rA LANG_MAP=(\
   ["cli"]="CLI"       \
@@ -172,7 +175,7 @@ done
 test_names=()
 if [[ "$#" -eq 0 ]]; then
   while read -r test_path || [[ -n "$test_path" ]]; do
-    test_file="${test_path#*/}"
+    test_file="${test_path##*/}"
     test_name="${test_file%\.yaml}"
     test_names+=("$test_name")
   done < <(find "$tests_dir" -type f -regextype posix-extended -regex ".*/tests/[0-9]+\.yaml" | sort -V)
@@ -298,7 +301,7 @@ write_result_column() {
   fi
   if [[ -n "$with_tree" ]]; then
     [[ "$with_tree" == "ascii" ]] && printf '        <pre>\n'
-    tree -I 'models' -I 'kiota-lock.json' --filesfirst -n -H "$generate_dir/$result_source/$lang/$test_file" "$generate_dir/$result_source/$lang/$test_file" \
+    tree -I 'models' -I 'kiota-lock.json' --filesfirst -n -H "$relative_generate_dir/$result_source/$lang/$test_file" "$generate_dir/$result_source/$lang/$test_file" \
       | sed -rn '/<body>/,/<br><br><p>/ p' \
       | tail -n +3 \
       | head -n '-1' \
@@ -318,7 +321,7 @@ write_row() {
 
   printf '      <td valign="top">\n'
   printf '        <p>\n'
-  printf '          File:&nbsp;<a href="%s">%s</a><br>\n' "${test_path}" "${test_file}"
+  printf '          File:&nbsp;<a href="%s">%s</a><br>\n' "${relative_test_path}" "${test_file}"
   # shellcheck disable=SC2046
   printf '          %s<br>\n' $(sed -rn "/^paths:/,$ s/^  ([^: ]+):$/  \1/p" "$test_path")
   printf '        </p>\n'
@@ -345,6 +348,7 @@ write_body() {
   printf '  <tbody>\n'
 
   for test_name in "${test_names[@]}"; do
+    relative_test_path="$relative_tests_dir/$test_name.yaml"
     test_path="$tests_dir/$test_name.yaml"
     test_file="$test_name.yaml"
     write_row
