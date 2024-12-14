@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -e
+
+# create -n 1 /foo/
+# create -n 2 /foo/bar/
+# create -n 3 /{path}/
+# create -n 4 /{path}/{id}/
+# create -n 5 /{path}/bar
+# create -n 6 /foo /foo/
+# create -n 7 /foo/ /foo
+# create -n 8 /foo/ /foo/bar
+# create -n 9 /foo/ /foo/bar/
+# create -n 10 /foo /{path}
+# create -n 11 /foo /{path}/
+# create -n 12 /foo/ /{path}
+# create -n 13 /foo/ /{path}/
+# create -n 14 /{path} /{path}/
+# create -n 15 /{path}/ /{path}
+# create -n 16 /{path} /{path}/{id}
+# create -n 17 /{path}/ /{path}/{id}
+# create -n 18 /foo/bar/ /foo/{id}
+
+# run -m main -l typescript
+# run -m main -l python
+
+# read -p "Update results/ then continue"
+
+prep -n -t ascii -l typescript -l python -i -d report_header.md -o README.md
+prep -n -t ascii -l typescript           -i                     -o report_main_typescript.md
+prep -n -t ascii -l python               -i                     -o report_main_python.md
