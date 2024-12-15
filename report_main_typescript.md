@@ -16,10 +16,10 @@
       <td valign="top">
         <p>
           Result:&nbsp;✅<br>
-          preserves trailing slash on single static route<br>
+          preserves trailing slash on a single non-parameterized route<br>
         </p>
         <pre>
-./out/main/typescript/1.yaml
+<a href="./out/main/typescript/1.yaml">./out/main/typescript/1.yaml</a>
 ├── apiSdk.ts       # main entry point
 │                   #   has `get foo()`
 └── foo             
@@ -41,10 +41,10 @@
       <td valign="top">
         <p>
           Result:&nbsp;✅<br>
-          preserves trailing slash on single static nested route<br>
+          preserves trailing slash on a single non-parameterized nested route<br>
         </p>
         <pre>
-./out/main/typescript/2.yaml
+<a href="./out/main/typescript/2.yaml">./out/main/typescript/2.yaml</a>
 ├── apiSdk.ts           # main entry point
 │                       #   has `get foo()`
 └── foo                 
@@ -72,10 +72,10 @@
       <td valign="top">
         <p>
           Result:&nbsp;✅<br>
-          preserves trailing slash on single dynamic route<br>
+          preserves trailing slash on a single parameterized route<br>
         </p>
         <pre>
-./out/main/typescript/3.yaml
+<a href="./out/main/typescript/3.yaml">./out/main/typescript/3.yaml</a>
 ├── apiSdk.ts       # main entry point
 │                   #   has `withPath()`
 └── item            
@@ -97,10 +97,10 @@
       <td valign="top">
         <p>
           Result:&nbsp;✅<br>
-          preserves trailing slash on single dynamic nested route<br>
+          preserves trailing slash on a single parameterized nested route<br>
         </p>
         <pre>
-./out/main/typescript/4.yaml
+<a href="./out/main/typescript/4.yaml">./out/main/typescript/4.yaml</a>
 ├── apiSdk.ts           # main entry point
 │                       #   has `byPath(path: string)`
 └── item                
@@ -128,10 +128,10 @@
       <td valign="top">
         <p>
           Result:&nbsp;✅<br>
-          supports single dynamic with nested static route<br>
+          supports single parameterized with nested non-parameterized route<br>
         </p>
         <pre>
-./out/main/typescript/5.yaml
+<a href="./out/main/typescript/5.yaml">./out/main/typescript/5.yaml</a>
 ├── apiSdk.ts           # main entry point
 │                       #   has `byPath(path: string)`
 └── item                
@@ -160,13 +160,13 @@
       <td valign="top">
         <p>
           Result:&nbsp;🚫<br>
-          only 1 uri template and it has trailing slash<br>
-          missing /foo<br>
-          incorrect RequestsMetadata<br>
-          comment references uri without trailing slash<br>
+          has only 1 uri template<br>
+          has /foo/ but missing /foo<br>
+          weirdly, some comments reference /foo/ and others reference /foo<br>
+          RequestsMetadata has duplicate "get" property<br>
         </p>
         <pre>
-./out/main/typescript/6.yaml
+<a href="./out/main/typescript/6.yaml">./out/main/typescript/6.yaml</a>
 ├── apiSdk.ts       # main entry point
 │                   #   has `get foo()`
 └── foo             
@@ -190,13 +190,10 @@
         <p>
           Result:&nbsp;🚫<br>
           almost same as 6<br>
-          only 1 uri template and it has trailing slash<br>
-          missing /foo<br>
-          incorrect RequestsMetadata<br>
-          comment references uri with trailing slash<br>
+          only difference is comments have reversed which route they refer to<br>
         </p>
         <pre>
-./out/main/typescript/7.yaml
+<a href="./out/main/typescript/7.yaml">./out/main/typescript/7.yaml</a>
 ├── apiSdk.ts       # main entry point
 │                   #   has `get foo()`
 └── foo             
@@ -222,7 +219,7 @@
           missing /foo/<br>
         </p>
         <pre>
-./out/main/typescript/8.yaml
+<a href="./out/main/typescript/8.yaml">./out/main/typescript/8.yaml</a>
 ├── apiSdk.ts           # main entry point
 │                       #   has `get foo()`
 └── foo                 
@@ -257,7 +254,7 @@
           missing /foo/<br>
         </p>
         <pre>
-./out/main/typescript/9.yaml
+<a href="./out/main/typescript/9.yaml">./out/main/typescript/9.yaml</a>
 ├── apiSdk.ts           # main entry point
 │                       #   has `get foo()`
 └── foo                 
@@ -291,7 +288,7 @@
           /foo is handled separately from /{path}<br>
         </p>
         <pre>
-./out/main/typescript/10.yaml
+<a href="./out/main/typescript/10.yaml">./out/main/typescript/10.yaml</a>
 ├── apiSdk.ts       # main entry point
 │                   #   has `get foo()`
 │                   #   and `byPath(path: string)`
@@ -325,7 +322,7 @@
           so same as 3<br>
         </p>
         <pre>
-./out/main/typescript/11.yaml
+<a href="./out/main/typescript/11.yaml">./out/main/typescript/11.yaml</a>
 ├── apiSdk.ts       # main entry point
 │                   #   has `get foo()`
 │                   #   and `withPath()`
@@ -359,7 +356,7 @@
           so same as 1<br>
         </p>
         <pre>
-./out/main/typescript/12.yaml
+<a href="./out/main/typescript/12.yaml">./out/main/typescript/12.yaml</a>
 ├── apiSdk.ts       # main entry point
 │                   #   has `get foo()`
 │                   #   and `byPath(path: string)`
@@ -393,7 +390,7 @@
           so same as 1 and 3<br>
         </p>
         <pre>
-./out/main/typescript/13.yaml
+<a href="./out/main/typescript/13.yaml">./out/main/typescript/13.yaml</a>
 ├── apiSdk.ts       # main entry point
 │                   #   has `get foo()`
 │                   #   and `withPath()`
@@ -426,7 +423,7 @@
           missing /{path}/<br>
         </p>
         <pre>
-./out/main/typescript/14.yaml
+<a href="./out/main/typescript/14.yaml">./out/main/typescript/14.yaml</a>
 ├── apiSdk.ts       # main entry point
 │                   #   has `byPath(path: string)`
 │                   #   and `withPath()`
@@ -453,7 +450,7 @@
           missing /{path}<br>
         </p>
         <pre>
-./out/main/typescript/15.yaml
+<a href="./out/main/typescript/15.yaml">./out/main/typescript/15.yaml</a>
 ├── apiSdk.ts       # main entry point
 │                   #   has `byPath(path: string)`
 │                   #   and `withPath()`
@@ -477,10 +474,10 @@
       <td valign="top">
         <p>
           Result:&nbsp;✅<br>
-          1 nested dynamic route with the same dynamic piece as another route<br>
+          1 nested parameterized route with the same parameterized piece as another route<br>
         </p>
         <pre>
-./out/main/typescript/16.yaml
+<a href="./out/main/typescript/16.yaml">./out/main/typescript/16.yaml</a>
 ├── apiSdk.ts           # main entry point
 │                       #   has `byPath(path: string)`
 └── item                
@@ -512,10 +509,10 @@
         <p>
           Result:&nbsp;🚫<br>
           missing /{path}/<br>
-          NavigationMetadata references something that was not imported<br>
+          NavigationMetadata uses a RequestsMetadata value that was not imported<br>
         </p>
         <pre>
-./out/main/typescript/17.yaml
+<a href="./out/main/typescript/17.yaml">./out/main/typescript/17.yaml</a>
 ├── apiSdk.ts           # main entry point
 │                       #   has `byPath(path: string)`
 │                       #   and `withPath()`
@@ -549,7 +546,7 @@
           so same as 1 and 3<br>
         </p>
         <pre>
-./out/main/typescript/18.yaml
+<a href="./out/main/typescript/18.yaml">./out/main/typescript/18.yaml</a>
 ├── apiSdk.ts           # main entry point
 │                       #   has `get foo()`
 └── foo                 

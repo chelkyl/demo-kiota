@@ -16,10 +16,10 @@
       <td valign="top">
         <p>
           Result:&nbsp;✅<br>
-          preserves trailing slash on single static route<br>
+          preserves trailing slash on a single non-parameterized route<br>
         </p>
         <pre>
-./out/main/python/1.yaml          
+<a href="./out/main/python/1.yaml">./out/main/python/1.yaml</a>
 ├── api_sdk.py                    # main entry point
 │                                 #   has `foo(self) -> FooRequestBuilder`
 └── foo                           
@@ -39,10 +39,10 @@
       <td valign="top">
         <p>
           Result:&nbsp;✅<br>
-          preserves trailing slash on single static nested route<br>
+          preserves trailing slash on a single non-parameterized nested route<br>
         </p>
         <pre>
-./out/main/python/2.yaml              
+<a href="./out/main/python/2.yaml">./out/main/python/2.yaml</a>
 ├── api_sdk.py                        # main entry point
 │                                     #   has `foo(self) -> FooRequestBuilder`
 └── foo                               
@@ -65,10 +65,10 @@
       <td valign="top">
         <p>
           Result:&nbsp;✅<br>
-          preserves trailing slash on single dynamic route<br>
+          preserves trailing slash on a single parameterized route<br>
         </p>
         <pre>
-./out/main/python/3.yaml                
+<a href="./out/main/python/3.yaml">./out/main/python/3.yaml</a>
 ├── api_sdk.py                          # main entry point
 │                                       #   has 
 └── item                                
@@ -88,10 +88,10 @@
       <td valign="top">
         <p>
           Result:&nbsp;✅<br>
-          preserves trailing slash on single dynamic nested route<br>
+          preserves trailing slash on a single parameterized nested route<br>
         </p>
         <pre>
-./out/main/python/4.yaml                     
+<a href="./out/main/python/4.yaml">./out/main/python/4.yaml</a>
 ├── api_sdk.py                               # main entry point
 │                                            #   has 
 └── item                                     
@@ -114,10 +114,10 @@
       <td valign="top">
         <p>
           Result:&nbsp;✅<br>
-          supports single dynamic with nested static route<br>
+          supports single parameterized with nested non-parameterized route<br>
         </p>
         <pre>
-./out/main/python/5.yaml                     
+<a href="./out/main/python/5.yaml">./out/main/python/5.yaml</a>
 ├── api_sdk.py                               # main entry point
 │                                            #   has 
 └── item                                     
@@ -141,10 +141,11 @@
       <td valign="top">
         <p>
           Result:&nbsp;🚫<br>
-          missing /foo<br>
+          almost completely correct<br>
+          has /foo/ but missing /foo<br>
         </p>
         <pre>
-./out/main/python/6.yaml          
+<a href="./out/main/python/6.yaml">./out/main/python/6.yaml</a>
 ├── api_sdk.py                    # main entry point
 │                                 #   has `foo(self) -> FooRequestBuilder`
 └── foo                           
@@ -166,11 +167,12 @@
       <td valign="top">
         <p>
           Result:&nbsp;🚫<br>
-          missing /foo/<br>
-          help doc references /foo/<br>
+          almost completely correct<br>
+          has /foo but missing /foo/<br>
+          however, help doc references /foo/<br>
         </p>
         <pre>
-./out/main/python/7.yaml          
+<a href="./out/main/python/7.yaml">./out/main/python/7.yaml</a>
 ├── api_sdk.py                    # main entry point
 │                                 #   has `foo(self) -> FooRequestBuilder`
 └── foo                           
@@ -195,7 +197,7 @@
           missing /foo/<br>
         </p>
         <pre>
-./out/main/python/8.yaml              
+<a href="./out/main/python/8.yaml">./out/main/python/8.yaml</a>
 ├── api_sdk.py                        # main entry point
 │                                     #   has `foo(self) -> FooRequestBuilder`
 └── foo                               
@@ -225,7 +227,7 @@
           missing /foo/<br>
         </p>
         <pre>
-./out/main/python/9.yaml              
+<a href="./out/main/python/9.yaml">./out/main/python/9.yaml</a>
 ├── api_sdk.py                        # main entry point
 │                                     #   has `foo(self) -> FooRequestBuilder`
 └── foo                               
@@ -254,7 +256,7 @@
           /foo is handled separately from /{path}<br>
         </p>
         <pre>
-./out/main/python/10.yaml                    
+<a href="./out/main/python/10.yaml">./out/main/python/10.yaml</a>
 ├── api_sdk.py                               # main entry point
 │                                            #   has `foo(self) -> FooRequestBuilder`
 ├── foo                                      
@@ -283,7 +285,7 @@
           so same as 3<br>
         </p>
         <pre>
-./out/main/python/11.yaml               
+<a href="./out/main/python/11.yaml">./out/main/python/11.yaml</a>
 ├── api_sdk.py                          # main entry point
 │                                       #   has `foo(self) -> FooRequestBuilder`
 ├── foo                                 
@@ -312,7 +314,7 @@
           so same as 1<br>
         </p>
         <pre>
-./out/main/python/12.yaml                    
+<a href="./out/main/python/12.yaml">./out/main/python/12.yaml</a>
 ├── api_sdk.py                               # main entry point
 │                                            #   has `foo(self) -> FooRequestBuilder`
 ├── foo                                      
@@ -341,7 +343,7 @@
           so same as 1 and 3<br>
         </p>
         <pre>
-./out/main/python/13.yaml               
+<a href="./out/main/python/13.yaml">./out/main/python/13.yaml</a>
 ├── api_sdk.py                          # main entry point
 │                                       #   has `foo(self) -> FooRequestBuilder`
 ├── foo                                 
@@ -369,7 +371,7 @@
           /{path} and /{path}/ are handled separately<br>
         </p>
         <pre>
-./out/main/python/14.yaml                    
+<a href="./out/main/python/14.yaml">./out/main/python/14.yaml</a>
 ├── api_sdk.py                               # main entry point
 │                                            #   has 
 └── item                                     
@@ -396,7 +398,7 @@
           same as 14<br>
         </p>
         <pre>
-./out/main/python/15.yaml                    
+<a href="./out/main/python/15.yaml">./out/main/python/15.yaml</a>
 ├── api_sdk.py                               # main entry point
 │                                            #   has 
 └── item                                     
@@ -420,10 +422,10 @@
       <td valign="top">
         <p>
           Result:&nbsp;✅<br>
-          1 nested dynamic route with the same dynamic piece as another route<br>
+          1 nested parameterized route with the same parameterized piece as another route<br>
         </p>
         <pre>
-./out/main/python/16.yaml                    
+<a href="./out/main/python/16.yaml">./out/main/python/16.yaml</a>
 ├── api_sdk.py                               # main entry point
 │                                            #   has 
 └── item                                     
@@ -449,10 +451,10 @@
       <td valign="top">
         <p>
           Result:&nbsp;✅<br>
-          1 nested dynamic route with the same dynamic piece as another route (albeit with a trailing slash)<br>
+          1 nested parameterized route with the same parameterized piece as another route (albeit with a trailing slash)<br>
         </p>
         <pre>
-./out/main/python/17.yaml                    
+<a href="./out/main/python/17.yaml">./out/main/python/17.yaml</a>
 ├── api_sdk.py                               # main entry point
 │                                            #   has 
 └── item                                     
@@ -483,7 +485,7 @@
           so same as 1 and 3<br>
         </p>
         <pre>
-./out/main/python/18.yaml                  
+<a href="./out/main/python/18.yaml">./out/main/python/18.yaml</a>
 ├── api_sdk.py                             # main entry point
 │                                          #   has `foo(self) -> FooRequestBuilder`
 └── foo                                    
