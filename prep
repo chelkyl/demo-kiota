@@ -283,9 +283,8 @@ write_result_column() {
   result_summary=""
   result_body=""
   if [[ -f "$result_path" ]]; then
-    # TODO: improve summary and body parsing by ignoring HTML comment lines and reverting to line-number-based selection
-    result_summary="$(sed -rn '/^(ok|error|strange|\?)( .*)?$/p' "$result_path" | sed -r -e 's/^ok ?/✅/' -e 's/^error ?/🚫/' -e 's/^strange ?/⚠️/')"
-    result_body="$(sed -rn '/^(ok|error|strange|\?)( .*)?$/,$p' "$result_path" | tail -n +3 | xargs -d '\n' printf '\n          %s<br>')"
+    result_summary="$(awk -f "$ROOT_DIR/writers/get_result_summary.awk" "$result_path" | sed -r -e 's/^ok ?/✅/' -e 's/^error ?/🚫/' -e 's/^strange ?/⚠️/')"
+    result_body="$(awk -f "$ROOT_DIR/writers/get_result_body.awk" "$result_path" | xargs -d '\n' printf '\n          %s<br>')"
   fi
   printf '        <p>\n          Result:&nbsp;%s<br>%s\n        </p>\n' "$result_summary" "$result_body"
   local tree_writer_wrapper=cat
