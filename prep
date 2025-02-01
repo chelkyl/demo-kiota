@@ -248,18 +248,21 @@ write_result_column_with_highlights() {
     while mapfile -t -n 2 left_and_right && ((${#left_and_right[@]})); do
       left="${left_and_right[0]}"
       right="${left_and_right[1]}"
-      original_lines+=("$left")
-      result_lines+=("$right")
       if [[ "$is_first" == 0 ]]; then
         [[ "${#left}" -gt "$max_left" ]] && max_left="${#left}"
       else
         is_first=0
+        [[ "$with_tree" == "ascii" ]] && left="<a href=\"$left\">$left</a>"
       fi
+      original_lines+=("$left")
+      result_lines+=("$right")
     done < <(with_tree="$with_tree" result_source="$result_source" lang="$lang" test_file="$test_file" "$highlights_writer" "$line")
   done
 
   local padding_str="\u00A0"
   [[ "$with_tree" == "html" ]] && padding_str="&nbsp;"
+  local end_str=""
+  [[ "$with_tree" == "html" ]] && end_str="<br>"
   local padding=
   local i=
   local x=
@@ -271,7 +274,7 @@ write_result_column_with_highlights() {
     for ((x=${#left};x<max_left;x++)); do
       padding+="$padding_str"
     done
-    printf '%s%b%s\n' "$left" "$padding" "$right"
+    printf '%s%b%s%s\n' "$left" "$padding" "$right" "$end_str"
   done
 }
 
@@ -301,13 +304,12 @@ write_result_column() {
   if [[ -n "$with_tree" ]]; then
     [[ "$with_tree" == "ascii" ]] && printf '        <pre>\n'
     tree -I 'models' -I 'kiota-lock.json' --filesfirst -n -H "$relative_generate_dir/$result_source/$lang/$test_file" "$generate_dir/$result_source/$lang/$test_file" \
-      | sed -rn '/<body>/,/<br><br><p>/ p' \
-      | tail -n +3 \
-      | head -n '-1' \
+      | awk '/<body>/ { do_print=1; getline; next; }; /<br><br><p>/ { do_print=0; }; do_print;' \
       | sed -r -e 's,//,/,g' \
             -e 's,──,─,g' \
             -e 's/─ /─\&nbsp;/g' \
             -e 's/\&nbsp; /\&nbsp;\&nbsp;/g' \
+            -e 's/<br>$//' \
       | "$tree_writer_wrapper" \
       | sed -r 's/\t//g'
     [[ "$with_tree" == "ascii" ]] && printf '</pre>\n'
