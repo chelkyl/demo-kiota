@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+with_tree="$with_tree"
+result_source="$result_source"
+lang="$lang"
+test_file="$test_file"
+line="$1"
+
+cur_path="$(sed -r 's/.+ href="([^"]+)".+/\1/g' <<< "$line")"
+
+if [[ "$with_tree" == "ascii" ]]; then
+  # format as plain ascii tree
+  # replace nbsp with U+00A0
+  line="$(sed -r 's,([^<]*)<a href="[^"]+">([^<]+)</a>.*,\1\2,g' <<< "$line" | sed -r -e 's/&nbsp;/ /g' -e 's/─/──/g')"
+fi
+
+result_path="out/$result_source/$lang/$test_file"
+extension="$(sed -r -e 's/([^─]+)── .+/\1/g' -e 's/├/│/g' -e 's/└/ /g' <<< "$line")"
+
+if [[ "$cur_path" == "$result_path" ]]; then
+  printf '<a href="%s">%s</a>\n\n' "$line" "$line"
+elif [[ "$cur_path" =~ api_sdk\.go ]]; then
+  i=0
+  while IFS= read -r result_line || [[ -n "$result_line" ]]; do
+    if [[ -n "$result_line" ]]; then
+      if [[ $i > 0 ]]; then
+        printf '%b\n%s\n' "$extension" "# $result_line"
+      else
+        printf '%b\n%s\n' "$line" "# $result_line"
+      fi
+    fi
+    i=$((i+1))
+  done < <(sed -rn '/^func (\([^)]+\) )?[^(]+\(/ s/^func (\([^)]+\) )?([^(]+\([^{]*\)) \{/`\1\2`/gp' "$cur_path" \
+          | sed -r 's/( |\*)[^ .,)]+\./ /g' \
+          | paste -s -d',' \
+          | sed -r -e 's/,/\n  and /g' -e '1 s/.*/main entry point\n  has &/g' \
+          )
+elif [[ "$cur_path" =~ \.go ]]; then
+  printf '%s\n%s\n' "$line" "# UriTemplate = $(sed -rn '/^ +super\(\).__init__\(request_adapter, / s/[^"]+("[^"]+").+/\1/gp' "$cur_path")"
+
+  while IFS= read -r result_line || [[ -n "$result_line" ]]; do
+    if [[ -n "$result_line" ]]; then
+      printf '%b\n%s\n' "$extension" "# $result_line"
+    fi
+  done < <(sed -rn '/^func (\([^)]+\) )?[^(]+\(/ s/^func (\([^)]+\) )?([^(]+\([^{]*\)) \{/`\1\2`/gp' "$cur_path" \
+          | sed -r '/(Get\(|ToGetRequestInformation\(|WithUrl\()/ s/[^`)]+\) (Get|ToGetRequestInformation|WithUrl)\([^`]+/\1/g' \
+          | sed -r '$!N;$!N;s/`Get`\n`ToGetRequestInformation`\n`WithUrl`/the standard methods/g;P;D' \
+          | sed -r 's/( |\*)[^ .,)]+\./ /g' \
+          | sed -r 's/`Get`/another `Get` method/' \
+          | awk '{ if ($0 ~ /^the standard methods$/) print $0; else arr[lines++]=$0; } END { for (i=0;i<lines;i++) print arr[i] }' \
+          | paste -s -d'%' \
+          | sed -r -e 's/%/\n  and /g' -e '1 s/.*/RequestBuilder has &/g' \
+          )
+else
+  printf '%s\n\n' "$line"
+fi
