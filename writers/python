@@ -20,7 +20,6 @@ extension="$(sed -r -e 's/([^─]+)── .+/\1/g' -e 's/├/│/g' -e 's/└/�
 if [[ "$cur_path" == "$result_path" ]]; then
   printf '<a href="%s">%s</a>\n\n' "$line" "$line"
 elif [[ "$cur_path" =~ api_sdk\.py ]]; then
-  # printf '%s\n%s\n' "$line" "# main entry point has $(sed -rn '/^    @property/,/^        return/p' "$cur_path" | sed -rn '/ def / s/^ +def ([^(]+\([^)]*\)) -> ([^:]+):/`\1 -> \2`/gp' | paste -s -d',' | sed 's/,/ and /g')"
   i=0
   while IFS= read -r result_line || [[ -n "$result_line" ]]; do
     if [[ -n "$result_line" ]]; then
@@ -39,14 +38,13 @@ elif [[ "$cur_path" =~ api_sdk\.py ]]; then
 elif [[ "$cur_path" =~ \.py ]]; then
   printf '%s\n%s\n' "$line" "# UriTemplate = $(sed -rn '/^ +super\(\).__init__\(request_adapter, / s/[^"]+("[^"]+").+/\1/gp' "$cur_path")"
 
-  #printf '%b\n%s\n' "$extension" "# RequestBuilder has $(sed -rn '/ (async )?def [^_]/ s/^ +(async )?def ([^(]+\([^)]*\)) -> ([^:]+):/`\2 -> \3`/gp' "$cur_path" | sed -r '/(get\(|to_get_request_information\()/ s/(get|to_get_request_information)\([^`]+/\1/g' | paste -s -d'%' | sed 's/%/ and /g' | sed -r 's/`get` and `to_get_request_information`/the standard methods/g')"
   while IFS= read -r result_line || [[ -n "$result_line" ]]; do
     if [[ -n "$result_line" ]]; then
       printf '%b\n%s\n' "$extension" "# $result_line"
     fi
   done < <(sed -rn '/ (async )?def [^_]/ s/^ +(async )?def ([^(]+\([^)]*\)) -> ([^:]+):/`\2 -> \3`/gp' "$cur_path" \
-          | sed -r '/(get\(|to_get_request_information\()/ s/(get|to_get_request_information)\([^`]+/\1/g' \
-          | sed -r '$!N;s/`get`\n`to_get_request_information`/the standard methods/g;P;D' \
+          | sed -r '/(get\(|to_get_request_information\(|with_url\()/ s/(get|to_get_request_information|with_url)\([^`]+/\1/g' \
+          | sed -r '$!N;$!N;s/`get`\n`to_get_request_information`\n`with_url`/the standard methods/g;P;D' \
           | sed -r 's/`([A-Z][^\(]+)\(self,request_configuration:.+`/`\1`/g' \
           | awk '{ if ($0 ~ /^the standard methods$/) print $0; else arr[lines++]=$0; } END { for (i=0;i<lines;i++) print arr[i] }' \
           | paste -s -d'%' \
@@ -55,6 +53,3 @@ elif [[ "$cur_path" =~ \.py ]]; then
 else
   printf '%s\n\n' "$line"
 fi
-
-#printf '%s\n' ".$cur_path." >&2
-#printf '%s\n%s\n' "$line" "wow .$with_tree. .$result_source. .$lang. .$test_file." >&2
