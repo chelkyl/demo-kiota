@@ -4,5 +4,5 @@
 /report_template.md
 
 /.env
-/kiota_main
-/kiota_pr
+/kiota_main*
+/kiota_pr*
