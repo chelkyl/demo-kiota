@@ -30,20 +30,20 @@ elif [[ "$cur_path" =~ api_sdk\.go ]]; then
       fi
     fi
     i=$((i+1))
-  done < <(sed -rn '/^func (\([^)]+\) )?[^(]+\(/ s/^func (\([^)]+\) )?([^(]+\([^{]*\)) \{/`\1\2`/gp' "$cur_path" \
-          | sed -r 's/( |\*)[^ .,)]+\./ /g' \
+  done < <(sed -rn '/^func (\([^)]+\) )[^(]+\(/ s/^func (\([^)]+\) )([^(]+\([^{]*\)) \{/`\2`/gp' "$cur_path" \
+          | sed -r 's/( |\*)[^ .,)]+\./\1/g' \
           | paste -s -d',' \
           | sed -r -e 's/,/\n  and /g' -e '1 s/.*/main entry point\n  has &/g' \
           )
 elif [[ "$cur_path" =~ \.go ]]; then
-  printf '%s\n%s\n' "$line" "# UriTemplate = $(sed -rn '/^ +super\(\).__init__\(request_adapter, / s/[^"]+("[^"]+").+/\1/gp' "$cur_path")"
+  printf '%s\n%s\n' "$line" "# UriTemplate = $(sed -rn '/NewBaseRequestBuilder\(requestAdapter, / s/[^"]+("[^"]+").+/\1/gp' "$cur_path")"
 
   while IFS= read -r result_line || [[ -n "$result_line" ]]; do
     if [[ -n "$result_line" ]]; then
       printf '%b\n%s\n' "$extension" "# $result_line"
     fi
-  done < <(sed -rn '/^func (\([^)]+\) )?[^(]+\(/ s/^func (\([^)]+\) )?([^(]+\([^{]*\)) \{/`\1\2`/gp' "$cur_path" \
-          | sed -r '/(Get\(|ToGetRequestInformation\(|WithUrl\()/ s/[^`)]+\) (Get|ToGetRequestInformation|WithUrl)\([^`]+/\1/g' \
+  done < <(sed -rn '/^func (\([^)]+\) )[^(]+\(/ s/^func (\([^)]+\) )([^(]+\([^{]*\)) \{/`\2`/gp' "$cur_path" \
+          | sed -r '/(Get\(|ToGetRequestInformation\(|WithUrl\()/ s/(Get|ToGetRequestInformation|WithUrl)\([^`]+/\1/g' \
           | sed -r '$!N;$!N;s/`Get`\n`ToGetRequestInformation`\n`WithUrl`/the standard methods/g;P;D' \
           | sed -r 's/( |\*)[^ .,)]+\./ /g' \
           | sed -r 's/`Get`/another `Get` method/' \
