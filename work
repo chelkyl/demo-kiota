@@ -21,10 +21,7 @@ Options:
 Positional Arguments:
 
 workspace    the name to use for the folder as well as the branch name
-             will be slugified, preserving only [a-zA-Z0-9._-] characters
-             if GIT_BRANCH_PREFIX is defined,
-               the folder name will still be the workspace name
-               but the branch name will be GIT_BRANCH_PREFIX/workspace
+             will be slugified, preserving only [a-zA-Z0-9/._-] characters
              defaults to the previously-specified workspace in the .env file
              otherwise lists the available branches and exits
 
@@ -62,11 +59,10 @@ fi
 workspace="$1"
 shift 1
 if [[ -n "$workspace" ]]; then
-  # slugify workspace
-  workspace="$(sed -r -e 's/[^a-zA-Z0-9._-]/-/g' -e 's/-+/-/g' <<< "$workspace")"
+  # clean up workspace name
+  workspace="$(sed -r -e 's/[^a-zA-Z0-9\/._-]/-/g' -e 's/-+/-/g' <<< "$workspace")"
 fi
 
-workspace_path="$ROOT_DIR/spaces/$workspace"
 if [[ -z "$workspace" && ! -f "$ENV_FILE" ]]; then
   echo "Error: no workspace provided and no previous workspace available" >&2
   echo "Create a workspace with one of the following branches" >&2
@@ -74,11 +70,9 @@ if [[ -z "$workspace" && ! -f "$ENV_FILE" ]]; then
   exit 1
 fi
 
+workspace_path="$ROOT_DIR/spaces/$workspace"
 if [[ -n "$workspace" ]]; then
   branch_name="$workspace"
-  if [[ -n "$GIT_BRANCH_PREFIX" ]]; then
-      branch_name="$GIT_BRANCH_PREFIX/$branch_name"
-  fi
 
   # fetch branches from all remotes
   # (but we only really need and check origin)
@@ -111,7 +105,7 @@ EOF
   fi
 
   grep -Pcq "^export WORKSPACE=.+$" "$ENV_FILE" || sed -i '1 a export WORKSPACE=' "$ENV_FILE"
-  sed -r -i "s/WORKSPACE=.*/WORKSPACE='$workspace'/" "$ENV_FILE"
+  sed -r -i "s,WORKSPACE=.*,WORKSPACE='$workspace'," "$ENV_FILE"
 fi
 
 echo "Activating workspace"
