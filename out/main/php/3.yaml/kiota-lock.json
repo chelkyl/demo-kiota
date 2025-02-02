@@ -1,0 +1,34 @@
+{
+  "descriptionHash": "4EF99CB86870318E22741CA14D14F9ED4188567EDCE4EAFA6DB1A57A88E6250F9CDF9982FC0762B5562C22B5D47C56DE047FD7FE69217B227A965DDA3B7EE2AE",
+  "descriptionLocation": "../../../../tests/3.yaml",
+  "lockFileVersion": "1.0.0",
+  "kiotaVersion": "1.23.0",
+  "clientClassName": "ApiSdk",
+  "typeAccessModifier": "Public",
+  "clientNamespaceName": "apiSdk",
+  "language": "PHP",
+  "usesBackingStore": false,
+  "excludeBackwardCompatible": true,
+  "includeAdditionalData": true,
+  "disableSSLValidation": false,
+  "serializers": [
+    "Microsoft.Kiota.Serialization.Json.JsonSerializationWriterFactory",
+    "Microsoft.Kiota.Serialization.Text.TextSerializationWriterFactory",
+    "Microsoft.Kiota.Serialization.Form.FormSerializationWriterFactory",
+    "Microsoft.Kiota.Serialization.Multipart.MultipartSerializationWriterFactory"
+  ],
+  "deserializers": [
+    "Microsoft.Kiota.Serialization.Json.JsonParseNodeFactory",
+    "Microsoft.Kiota.Serialization.Text.TextParseNodeFactory",
+    "Microsoft.Kiota.Serialization.Form.FormParseNodeFactory"
+  ],
+  "structuredMimeTypes": [
+    "application/json",
+    "text/plain;q=0.9",
+    "application/x-www-form-urlencoded;q=0.2",
+    "multipart/form-data;q=0.1"
+  ],
+  "includePatterns": [],
+  "excludePatterns": [],
+  "disabledValidationRules": []
+}
