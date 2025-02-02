@@ -27,9 +27,12 @@ with_source=0
 # html - render as html
 # blank - skip
 with_tree=
-# 1 - include test results for main/pr and each lang
+# 1 - include output extracts for main/pr and each lang
 # 0 - skip
-with_highlights=0
+with_extracts=0
+# 1 - only include test results that are error/strange for main/pr and each lang
+# 0 - include all results
+only_highlights=0
 # lang - group result columns by lang
 # source - group result columns by result source
 with_group=lang
@@ -104,10 +107,13 @@ Options:
                         "html" will format the file tree as html
                         default: ""
 
-  -i, --highlights      add auto-generated highlights of the kiota output
+  -e, --extracts        add auto-generated extracts of the kiota output
                         in the file tree
                         must be passed with --tree "tree" or --tree "html"
-                        default: no highlights
+                        default: no extracts
+
+  -i, --only-highlights only include entries that are not marked as 'error' or 'strange'
+                        default: report all results
 
 Positional Arguments:
 
@@ -116,7 +122,7 @@ Positional Arguments:
 EOF
 }
 
-parsed_args=$(getopt --name "prep" -o ho:l:g:d:npt:i -l help,output:,lang:,group:,header:,main,pr,tree:,highlights -- "$@")
+parsed_args=$(getopt --name "prep" -o ho:l:g:d:npt:ei -l help,output:,lang:,group:,header:,main,pr,tree:,extracts,only-highlights -- "$@")
 eval set -- "$parsed_args"
 while :; do
   case "$1" in
@@ -153,8 +159,12 @@ while :; do
       [[ "$with_tree" == "ascii" || "$with_tree" == "html" ]] || { echo "Error: tree mode must be 'ascii' or 'html'" >&2; exit 1; }
       shift 2
       ;;
-    -i|--highlights)
-      with_highlights=1
+    -e|--extracts)
+      with_extracts=1
+      shift 1
+      ;;
+    -i|--only-highlights)
+      only_highlights=1
       shift 1
       ;;
     -h|--help)
@@ -202,10 +212,13 @@ if [[ $((with_source & ADD_PR)) == "$ADD_PR" ]]; then
 fi
 
 write_header_result_column() {
+  # globals: LANG_MAP
+  # caller: lang result_source
   printf '      <th>%s kiota %s Results</th>\n' "${LANG_MAP[$lang]}" "$result_source"
 }
 
 write_header_result_columns() {
+  # globals: with_group langs result_sources
   if [[ "$with_group" == "lang" ]]; then
     for lang in "${langs[@]}"; do
       for result_source in "${result_sources[@]}"; do
@@ -230,11 +243,12 @@ write_header() {
   printf '  </thead>\n'
 }
 
-write_result_column_with_highlights() {
-  # globals: with_tree result_source lang test_file
+write_result_column_with_extracts() {
+  # globals: ROOT_DIR with_tree
+  # caller: result_source lang test_file
   # reads from stdin
-  local highlights_writer="$ROOT_DIR/writers/$lang"
-  if [[ ! -x "$highlights_writer" ]]; then
+  local extracts_writer="$ROOT_DIR/writers/$lang"
+  if [[ ! -x "$extracts_writer" ]]; then
     cat
     return 0
   fi
@@ -256,7 +270,7 @@ write_result_column_with_highlights() {
       fi
       original_lines+=("$left")
       result_lines+=("$right")
-    done < <(with_tree="$with_tree" result_source="$result_source" lang="$lang" test_file="$test_file" "$highlights_writer" "$line")
+    done < <(with_tree="$with_tree" result_source="$result_source" lang="$lang" test_file="$test_file" "$extracts_writer" "$line")
   done
 
   local padding_str="\u00A0"
@@ -278,27 +292,28 @@ write_result_column_with_highlights() {
   done
 }
 
-warned_highlights_writer=0
+warned_extracts_writer=0
 write_result_column() {
-  # globals: with_highlights with_tree result_source lang test_file
+  # globals: ROOT_DIR generate_dir relative_generate_dir results_dir warned_extracts_writer with_extracts with_tree
+  # caller: result_source lang test_file
   printf '      <td valign="top">\n'
-  result_path="$results_dir/$result_source/$lang/${test_file%\.yaml}.md"
-  result_summary=""
-  result_body=""
+  local result_path="$results_dir/$result_source/$lang/${test_file%\.yaml}.md"
+  local result_summary=""
+  local result_body=""
   if [[ -f "$result_path" ]]; then
     result_summary="$(awk -f "$ROOT_DIR/writers/get_result_summary.awk" "$result_path" | sed -r -e 's/^ok ?/✅/' -e 's/^error ?/🚫/' -e 's/^strange ?/⚠️/')"
     result_body="$(awk -f "$ROOT_DIR/writers/get_result_body.awk" "$result_path" | xargs -d '\n' printf '\n          %s<br>')"
   fi
   printf '        <p>\n          Result:&nbsp;%s<br>%s\n        </p>\n' "$result_summary" "$result_body"
   local tree_writer_wrapper=cat
-  if [[ "$with_highlights" -eq 1 ]]; then
-    tree_writer_wrapper=write_result_column_with_highlights
-    # highlights_writer is unused and is only for checking that it exists
-    # it will be determined and used in write_result_column_with_highlights
-    local highlights_writer="$ROOT_DIR/writers/$lang"
-    if [[ ! -x "$highlights_writer" && "$warned_highlights_writer" -eq 0 ]]; then
-      echo "Warning: $highlights_writer does not exist or is not executable, highlights will not be included" >&2
-      warned_highlights_writer=1
+  if [[ "$with_extracts" -eq 1 ]]; then
+    tree_writer_wrapper=write_result_column_with_extracts
+    # extracts_writer is unused and is only for checking that it exists
+    # it will be determined and used in write_result_column_with_extracts
+    local extracts_writer="$ROOT_DIR/writers/$lang"
+    if [[ ! -x "$extracts_writer" && "$warned_extracts_writer" -eq 0 ]]; then
+      echo "Warning: $extracts_writer does not exist or is not executable, extracts will not be included" >&2
+      warned_extracts_writer=1
     fi
   fi
   if [[ -n "$with_tree" ]]; then
@@ -318,6 +333,29 @@ write_result_column() {
 }
 
 write_row() {
+  # globals: ROOT_DIR langs result_sources results_dir with_group only_highlights
+  # caller: test_file test_path relative_test_path
+  local lang=""
+  local result_source=""
+  if [[ "$only_highlights" -eq 1 ]]; then
+    local has_highlight=0
+    for lang in "${langs[@]}"; do
+      if [[ "$has_highlight" -eq 1 ]]; then
+        break
+      fi
+      for result_source in "${result_sources[@]}"; do
+        local result_path="$results_dir/$result_source/$lang/${test_file%\.yaml}.md"
+        if [[ -f "$result_path" ]] && ! awk -f "$ROOT_DIR/writers/get_result_summary.awk" "$result_path" | grep -cq 'ok'; then
+          has_highlight=1
+          break
+        fi
+      done
+    done
+    if [[ "$has_highlight" -eq 0 ]]; then
+      return
+    fi
+  fi
+
   printf '    <tr>\n'
 
   printf '      <td valign="top">\n'
@@ -346,8 +384,13 @@ write_row() {
 }
 
 write_body() {
+  # globals: test_names tests_dir relative_tests_dir
   printf '  <tbody>\n'
 
+  local test_name=""
+  local relative_test_path=""
+  local test_path=""
+  local test_file=""
   for test_name in "${test_names[@]}"; do
     relative_test_path="$relative_tests_dir/$test_name.yaml"
     test_path="$tests_dir/$test_name.yaml"
@@ -359,6 +402,7 @@ write_body() {
 }
 
 write_kiota_version() {
+  # globals: ADD_MAIN ADD_PR kiota_main kiota_pr
   printf '\nEvaluating output generated by:\n\n```\n'
   if [[ $((with_source & ADD_MAIN)) == "$ADD_MAIN" ]]; then
     printf 'kiota main: %s\n' "$("${kiota_main:-"kiota_main"}" --version)"
