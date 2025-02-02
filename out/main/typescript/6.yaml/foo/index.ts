@@ -5,11 +5,11 @@
 import { type BaseRequestBuilder, type Parsable, type ParsableFactory, type RequestConfiguration, type RequestInformation, type RequestsMetadata } from '@microsoft/kiota-abstractions';
 
 /**
- * Builds and executes requests for operations under /foo
+ * Builds and executes requests for operations under /foo/
  */
 export interface FooRequestBuilder extends BaseRequestBuilder<FooRequestBuilder> {
     /**
-     * Description 2
+     * Description 1
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {Promise<string>}
      */

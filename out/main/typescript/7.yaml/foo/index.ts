@@ -24,7 +24,7 @@ export interface FooRequestBuilder extends BaseRequestBuilder<FooRequestBuilder>
 /**
  * Uri template for the request builder.
  */
-export const FooRequestBuilderUriTemplate = "{+baseurl}/foo/";
+export const FooRequestBuilderUriTemplate = "{+baseurl}/foo";
 /**
  * Metadata for all the requests in the request builder.
  */
