@@ -21,11 +21,26 @@ set -e
 # create -n 17 /{path}/ /{path}/{id}
 # create -n 18 /foo/bar/ /foo/{id}
 
-# run -m main -l typescript
+# run -m main -l csharp
+# run -m main -l go
+# run -m main -l java
+# run -m main -l php
 # run -m main -l python
+# run -m main -l typescript
 
 # read -p "Update results/ then continue"
 
-prep -n -t ascii -l typescript -l python -i -d report_header.md -o README.md
-prep -n -t ascii -l typescript           -i                     -o report_main_typescript.md
-prep -n -t ascii -l python               -i                     -o report_main_python.md
+prep -n -t ascii \
+    -l csharp \
+    -l go \
+    -l java \
+    -l php \
+    -l python \
+    -l typescript \
+    -i -d report_header.md -o README.md
+prep -n -t ascii -l csharp     -i -o report_main_csharp.md
+prep -n -t ascii -l go         -i -o report_main_go.md
+prep -n -t ascii -l java       -i -o report_main_java.md
+prep -n -t ascii -l php        -i -o report_main_php.md
+prep -n -t ascii -l python     -i -o report_main_python.md
+prep -n -t ascii -l typescript -i -o report_main_typescript.md
