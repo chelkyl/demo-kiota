@@ -327,7 +327,8 @@ kiota main: 1.23.0+85d3e6204154df471f5a1199e931264907234726
         <pre>
 <a href="./out/main/python/3.yaml">./out/main/python/3.yaml</a>
 ├── api_sdk.py                          # main entry point
-│                                       #   has 
+│                                       #   has `with_path(self
+│                                       #   and ) -> WithPathRequestBuilder`
 └── item                                
     └── with_path_request_builder.py    # UriTemplate = "{+baseurl}/{path}/"
                                         # RequestBuilder has the standard methods
@@ -436,7 +437,8 @@ kiota main: 1.23.0+85d3e6204154df471f5a1199e931264907234726
         <pre>
 <a href="./out/main/python/4.yaml">./out/main/python/4.yaml</a>
 ├── api_sdk.py                               # main entry point
-│                                            #   has 
+│                                            #   has `by_path(self
+│                                            #   and path: str) -> WithPathItemRequestBuilder`
 └── item                                     
     ├── with_path_item_request_builder.py    # UriTemplate = "{+baseurl}/{path}"
     │                                        # RequestBuilder has `with_id(self,) -> WithIdRequestBuilder`
@@ -554,7 +556,8 @@ kiota main: 1.23.0+85d3e6204154df471f5a1199e931264907234726
         <pre>
 <a href="./out/main/python/5.yaml">./out/main/python/5.yaml</a>
 ├── api_sdk.py                               # main entry point
-│                                            #   has 
+│                                            #   has `by_path(self
+│                                            #   and path: str) -> WithPathItemRequestBuilder`
 └── item                                     
     ├── with_path_item_request_builder.py    # UriTemplate = "{+baseurl}/{path}"
     │                                        # RequestBuilder has `bar(self) -> BarRequestBuilder`
@@ -1168,7 +1171,9 @@ kiota main: 1.23.0+85d3e6204154df471f5a1199e931264907234726
         <pre>
 <a href="./out/main/python/10.yaml">./out/main/python/10.yaml</a>
 ├── api_sdk.py                               # main entry point
-│                                            #   has `foo(self) -> FooRequestBuilder`
+│                                            #   has `by_path(self
+│                                            #   and path: str) -> WithPathItemRequestBuilder`
+│                                            #   and `foo(self) -> FooRequestBuilder`
 ├── foo                                      
 │   └── foo_request_builder.py               # UriTemplate = "{+baseurl}/foo"
 │                                            # RequestBuilder has the standard methods
@@ -1299,7 +1304,9 @@ kiota main: 1.23.0+85d3e6204154df471f5a1199e931264907234726
         <pre>
 <a href="./out/main/python/11.yaml">./out/main/python/11.yaml</a>
 ├── api_sdk.py                          # main entry point
-│                                       #   has `foo(self) -> FooRequestBuilder`
+│                                       #   has `with_path(self
+│                                       #   and ) -> WithPathRequestBuilder`
+│                                       #   and `foo(self) -> FooRequestBuilder`
 ├── foo                                 
 │   └── foo_request_builder.py          # UriTemplate = "{+baseurl}/foo"
 │                                       # RequestBuilder has the standard methods
@@ -1431,7 +1438,9 @@ kiota main: 1.23.0+85d3e6204154df471f5a1199e931264907234726
         <pre>
 <a href="./out/main/python/12.yaml">./out/main/python/12.yaml</a>
 ├── api_sdk.py                               # main entry point
-│                                            #   has `foo(self) -> FooRequestBuilder`
+│                                            #   has `by_path(self
+│                                            #   and path: str) -> WithPathItemRequestBuilder`
+│                                            #   and `foo(self) -> FooRequestBuilder`
 ├── foo                                      
 │   └── foo_request_builder.py               # UriTemplate = "{+baseurl}/foo/"
 │                                            # RequestBuilder has the standard methods
@@ -1563,7 +1572,9 @@ kiota main: 1.23.0+85d3e6204154df471f5a1199e931264907234726
         <pre>
 <a href="./out/main/python/13.yaml">./out/main/python/13.yaml</a>
 ├── api_sdk.py                          # main entry point
-│                                       #   has `foo(self) -> FooRequestBuilder`
+│                                       #   has `with_path(self
+│                                       #   and ) -> WithPathRequestBuilder`
+│                                       #   and `foo(self) -> FooRequestBuilder`
 ├── foo                                 
 │   └── foo_request_builder.py          # UriTemplate = "{+baseurl}/foo/"
 │                                       # RequestBuilder has the standard methods
@@ -1686,7 +1697,10 @@ kiota main: 1.23.0+85d3e6204154df471f5a1199e931264907234726
         <pre>
 <a href="./out/main/python/14.yaml">./out/main/python/14.yaml</a>
 ├── api_sdk.py                               # main entry point
-│                                            #   has 
+│                                            #   has `by_path(self
+│                                            #   and path: str) -> WithPathItemRequestBuilder`
+│                                            #   and `with_path(self
+│                                            #   and ) -> WithPathRequestBuilder`
 └── item                                     
     ├── with_path_item_request_builder.py    # UriTemplate = "{+baseurl}/{path}"
     │                                        # RequestBuilder has the standard methods
@@ -1801,7 +1815,10 @@ kiota main: 1.23.0+85d3e6204154df471f5a1199e931264907234726
         <pre>
 <a href="./out/main/python/15.yaml">./out/main/python/15.yaml</a>
 ├── api_sdk.py                               # main entry point
-│                                            #   has 
+│                                            #   has `by_path(self
+│                                            #   and path: str) -> WithPathItemRequestBuilder`
+│                                            #   and `with_path(self
+│                                            #   and ) -> WithPathRequestBuilder`
 └── item                                     
     ├── with_path_item_request_builder.py    # UriTemplate = "{+baseurl}/{path}"
     │                                        # RequestBuilder has the standard methods
@@ -1919,7 +1936,8 @@ kiota main: 1.23.0+85d3e6204154df471f5a1199e931264907234726
         <pre>
 <a href="./out/main/python/16.yaml">./out/main/python/16.yaml</a>
 ├── api_sdk.py                               # main entry point
-│                                            #   has 
+│                                            #   has `by_path(self
+│                                            #   and path: str) -> WithPathItemRequestBuilder`
 └── item                                     
     ├── with_path_item_request_builder.py    # UriTemplate = "{+baseurl}/{path}"
     │                                        # RequestBuilder has the standard methods
@@ -2054,7 +2072,10 @@ kiota main: 1.23.0+85d3e6204154df471f5a1199e931264907234726
         <pre>
 <a href="./out/main/python/17.yaml">./out/main/python/17.yaml</a>
 ├── api_sdk.py                               # main entry point
-│                                            #   has 
+│                                            #   has `by_path(self
+│                                            #   and path: str) -> WithPathItemRequestBuilder`
+│                                            #   and `with_path(self
+│                                            #   and ) -> WithPathRequestBuilder`
 └── item                                     
     ├── with_path_item_request_builder.py    # UriTemplate = "{+baseurl}/{path}"
     │                                        # RequestBuilder has `by_id(self,id: str) -> PathItemRequestBuilder`
