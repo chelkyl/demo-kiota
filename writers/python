@@ -30,8 +30,7 @@ elif [[ "$cur_path" =~ api_sdk\.py ]]; then
       fi
     fi
     i=$((i+1))
-  done < <(sed -rn '/^ +@property/,/^ +return/p' "$cur_path" \
-          | sed -rn '/ def / s/^ +def ([^(]+\([^)]*\)) -> ([^:]+):/`\1 -> \2`/gp' \
+  done < <(sed -rn '/ (async )?def [^_]/ s/^ +(async )?def ([^(]+\([^)]*\)) -> ([^:]+):/`\2 -> \3`/gp' "$cur_path" \
           | paste -s -d',' \
           | sed -r -e 's/,/\n  and /g' -e '1 s/.*/main entry point\n  has &/g' \
           )
