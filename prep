@@ -38,6 +38,8 @@ only_highlights=0
 with_group=lang
 # langs to create result columns for
 langs=()
+# id to set on the HTML table
+table_id=""
 # used for display in report
 relative_tests_dir="./tests"
 relative_generate_dir="./out"
@@ -115,6 +117,9 @@ Options:
   -i, --only-highlights only include entries that are not marked as 'error' or 'strange'
                         default: report all results
 
+  -b, --with-table-id   an id to set on the HTML table
+                        default: no id
+
 Positional Arguments:
 
 #     a space-separated list of one or more test ids to prepare results for
@@ -122,7 +127,7 @@ Positional Arguments:
 EOF
 }
 
-parsed_args=$(getopt --name "prep" -o ho:l:g:d:npt:ei -l help,output:,lang:,group:,header:,main,pr,tree:,extracts,only-highlights -- "$@")
+parsed_args=$(getopt --name "prep" -o ho:l:g:d:npt:eib: -l help,output:,lang:,group:,header:,main,pr,tree:,extracts,only-highlights,with-table-id -- "$@")
 eval set -- "$parsed_args"
 while :; do
   case "$1" in
@@ -166,6 +171,10 @@ while :; do
     -i|--only-highlights)
       only_highlights=1
       shift 1
+      ;;
+    -b|--with-table-id)
+      table_id="$2"
+      shift 2
       ;;
     -h|--help)
       help
@@ -414,7 +423,11 @@ write_kiota_version() {
 }
 
 write_table() {
-  printf '<table>\n'
+  if [[ -n "$table_id" ]]; then
+    printf '<table id="%s">\n' "$table_id"
+  else
+    printf '<table>\n'
+  fi
 
   write_header
   write_body
