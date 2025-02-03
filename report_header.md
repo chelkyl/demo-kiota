@@ -2,9 +2,18 @@
 
 View the language-specific reports at
 
+- [report_main_csharp.md](./report_main_csharp.md)
+- [report_main_go.md](./report_main_go.md)
+- [report_main_java.md](./report_main_java.md)
+- [report_main_php.md](./report_main_php.md)
 - [report_main_python.md](./report_main_python.md)
 - [report_main_typescript.md](./report_main_typescript.md)
 
-or have GitHub render using the full page width by running this in the DevTools console: `document.querySelector('.container-lg').style.maxWidth = '100%'`
+or the combined report highlights at [report_main_highlights.md](./report_main_highlights.md)
+
+or improve the display of the combined report below by running the following in the DevTools console:
+
+- full page width: `document.querySelector('.container-lg').style.maxWidth = '100%'`
+- sticky first column: `document.querySelector('#kiota-results-table').style.borderCollapse = 'separate'; document.querySelectorAll('#kiota-results-table td:first-child, #kiota-results-table th:first-child').forEach(e => { let s = e.style; s.position = 'sticky'; s.left = '0'; s.backgroundColor = 'var(--bgColor-default, var(--color-canvas-default))'; })`
 
 ## Combined Report

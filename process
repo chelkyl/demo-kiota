@@ -37,10 +37,18 @@ prep -n -t ascii \
     -l php \
     -l python \
     -l typescript \
-    -i -d report_header.md -o README.md
-prep -n -t ascii -l csharp     -i -o report_main_csharp.md
-prep -n -t ascii -l go         -i -o report_main_go.md
-prep -n -t ascii -l java       -i -o report_main_java.md
-prep -n -t ascii -l php        -i -o report_main_php.md
-prep -n -t ascii -l python     -i -o report_main_python.md
-prep -n -t ascii -l typescript -i -o report_main_typescript.md
+    -e -d report_header.md -b kiota-results-table -o README.md
+prep -n -t ascii \
+    -l csharp \
+    -l go \
+    -l java \
+    -l php \
+    -l python \
+    -l typescript \
+    -e -i -b kiota-results-table -o report_main_highlights.md
+prep -n -t ascii -l csharp     -e -o report_main_csharp.md
+prep -n -t ascii -l go         -e -o report_main_go.md
+prep -n -t ascii -l java       -e -o report_main_java.md
+prep -n -t ascii -l php        -e -o report_main_php.md
+prep -n -t ascii -l python     -e -o report_main_python.md
+prep -n -t ascii -l typescript -e -o report_main_typescript.md
